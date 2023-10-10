@@ -1,13 +1,11 @@
 {
-    "type": "code",
-    "modid": "OfflineFoodNoSpoil",
-    "name": "No offline food spoil",
-    "authors": [
-        "Wiltoga"
-    ],
-    "description": "Prevent player inventory food spoiling when the player is offline",
-    "version": "1.0.0",
-    "dependencies": {
-        "game": ""
-    }
+  "type": "code",
+  "modid": "OfflineFoodNoSpoil",
+  "side": "server",
+  "name": "No offline food spoil",
+  "authors": [
+    "Wiltoga"
+  ],
+  "description": "Prevent player inventory food spoiling when the player is offline",
+  "version": "1.0.0"
 }
