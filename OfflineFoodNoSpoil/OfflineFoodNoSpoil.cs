@@ -13,7 +13,6 @@ namespace Wiltoga
     public class OfflineFoodNoSpoil : ModSystem
     {
         public static string DataOldFoodSpoil => "freshness";
-        public static string DataPrefix => "NoOfflineFoodSpoil";
         public static ICoreServerAPI Server { get; private set; }
 
         public override bool ShouldLoad(EnumAppSide forSide)
@@ -39,7 +38,7 @@ namespace Wiltoga
                     if (freshAttribute is null)
                         continue;
                     var currentFreshness = freshAttribute.value[0];
-                    Server.WorldManager.SaveGame.StoreData($"{DataPrefix}.{byPlayer.PlayerUID}.{slot.Inventory.InventoryID}.{slot.Inventory.GetSlotId(slot)}.{DataOldFoodSpoil}", currentFreshness);
+                    Server.WorldManager.SaveGame.StoreData($"{byPlayer.PlayerUID}.{slot.Inventory.InventoryID}.{slot.Inventory.GetSlotId(slot)}.{DataOldFoodSpoil}", currentFreshness);
                     freshAttribute.value[0] = float.MaxValue;
                     slot.MarkDirty();
                 }
@@ -62,7 +61,7 @@ namespace Wiltoga
                             if (freshAttribute is null)
                                 continue;
                             var hours = Server.World.Calendar.TotalHours;
-                            var savedFreshness = Server.WorldManager.SaveGame.GetData($"{DataPrefix}.{byPlayer.PlayerUID}.{slot.Inventory.InventoryID}.{slot.Inventory.GetSlotId(slot)}.{DataOldFoodSpoil}", float.MinValue);
+                            var savedFreshness = Server.WorldManager.SaveGame.GetData($"{byPlayer.PlayerUID}.{slot.Inventory.InventoryID}.{slot.Inventory.GetSlotId(slot)}.{DataOldFoodSpoil}", float.MinValue);
                             if (savedFreshness >= 0)
                             {
                                 createdTotalHours.value = lastUpdatedTotalHours.value = hours;
