@@ -23,7 +23,7 @@
 </ItemGroup>
 
 <ItemGroup>
-  <None Update="OfflineFoodNoSpoil.png">
+  <None Update="modicon.png">
     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
   </None>
 </ItemGroup>
