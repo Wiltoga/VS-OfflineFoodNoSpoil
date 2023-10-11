@@ -13,7 +13,7 @@ namespace Wiltoga
     public class OfflineFoodNoSpoil : ModSystem
     {
         public static string DataOldFoodSpoil => "freshness";
-        public static ICoreServerAPI Server { get; private set; }
+        public static ICoreServerAPI? Server { get; private set; }
 
         public override bool ShouldLoad(EnumAppSide forSide)
         {
@@ -29,6 +29,8 @@ namespace Wiltoga
 
         private void Event_PlayerDisconnect(IServerPlayer byPlayer)
         {
+            if (Server is null)
+                return;
             foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
             {
                 if (inventory is null)
@@ -54,6 +56,8 @@ namespace Wiltoga
 
         private void Event_PlayerJoin(IServerPlayer byPlayer)
         {
+            if (Server is null)
+                return;
             foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
             {
                 if (inventory is null)
