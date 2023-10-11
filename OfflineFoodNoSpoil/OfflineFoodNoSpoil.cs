@@ -31,6 +31,8 @@ namespace Wiltoga
         {
             foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
             {
+                if (inventory is null)
+                    continue;
                 if (inventory.ClassName != "hotbar" && inventory.ClassName != "backpack")
                     continue;
                 foreach (var slot in inventory)
@@ -54,6 +56,8 @@ namespace Wiltoga
         {
             foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
             {
+                if (inventory is null)
+                    continue;
                 if (inventory.ClassName != "hotbar" && inventory.ClassName != "backpack")
                     continue;
                 foreach (var slot in inventory)
