@@ -71,10 +71,12 @@ namespace Wiltoga
                 return;
             try
             {
+                Server.Logger.Debug($"Player {byPlayer.PlayerName} joined");
                 foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
                 {
                     if (inventory is null)
                         continue;
+                    Server.Logger.Debug($"Scanning inventory {inventory.ClassName} {inventory.InventoryID}");
                     if (inventory.ClassName != "hotbar" && inventory.ClassName != "backpack")
                         continue;
                     foreach (var slot in inventory)
@@ -82,14 +84,22 @@ namespace Wiltoga
                         if (slot.Itemstack is not null)
                         {
                             var stack = slot.Itemstack;
+                            Server.Logger.Debug($"Scanning slot {inventory.GetSlotId(slot)} {stack.GetName()}");
                             var attributes = ExtractFreshnessAttributes(stack);
-                            var hours = Server.World.Calendar.TotalHours;
+                            Server.Logger.Debug($"Found {attributes.Count} freshness attributes");
                             foreach (var attributeSet in attributes)
                             {
+                                var skip = (float)(Server.World.Calendar.TotalHours - attributeSet.LastUpdateHours.value);
+                                Server.Logger.Debug("SKIP VALUE " + skip);
                                 for (int i = 0; i < attributeSet.Fresh.value.Length; i++)
-                                    attributeSet.Fresh.value[i] += (float)(hours - attributeSet.LastUpdateHours.value);
+                                {
+                                    Server.Logger.Debug("attribute before : " + attributeSet.Fresh.value[i]);
+                                    attributeSet.Fresh.value[i] += skip;
+                                    Server.Logger.Debug("attribute after : " + attributeSet.Fresh.value[i]);
+                                }
                             }
-                            slot.MarkDirty();
+                            if (attributes.Any())
+                                slot.MarkDirty();
                         }
                     }
                 }
