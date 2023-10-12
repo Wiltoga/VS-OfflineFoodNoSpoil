@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Schema;
@@ -27,6 +28,30 @@ namespace Wiltoga
             Server.Event.PlayerJoin += Event_PlayerJoin;
         }
 
+        private static List<(FloatArrayAttribute Fresh, DoubleAttribute LastUpdateHours, string? Index)> ExtractFreshnessAttributes(ItemStack stack)
+        {
+            var attributes = new List<(FloatArrayAttribute, DoubleAttribute, string?)>();
+            var freshAttribute = (stack.Attributes["transitionstate"] as ITreeAttribute)?["freshHours"] as FloatArrayAttribute;
+            var lastUpdatedTotalHours = (stack.Attributes["transitionstate"] as ITreeAttribute)?["lastUpdatedTotalHours"] as DoubleAttribute;
+            if (freshAttribute is not null && lastUpdatedTotalHours is not null)
+                attributes.Add((freshAttribute, lastUpdatedTotalHours, null));
+
+            var content = stack.Attributes["contents"] as ITreeAttribute;
+            if (content is not null)
+            {
+                foreach (var set in content)
+                {
+                    var contentStack = set.Value as ItemstackAttribute;
+                    freshAttribute = (contentStack?.value.Attributes["transitionstate"] as ITreeAttribute)?["freshHours"] as FloatArrayAttribute;
+                    lastUpdatedTotalHours = (contentStack?.value.Attributes["transitionstate"] as ITreeAttribute)?["lastUpdatedTotalHours"] as DoubleAttribute;
+                    if (freshAttribute is not null && lastUpdatedTotalHours is not null)
+                        attributes.Add((freshAttribute, lastUpdatedTotalHours, set.Key));
+                }
+            }
+
+            return attributes;
+        }
+
         private void Event_PlayerDisconnect(IServerPlayer byPlayer)
         {
             if (Server is null)
@@ -42,12 +67,14 @@ namespace Wiltoga
                     if (slot.Itemstack is not null)
                     {
                         var stack = slot.Itemstack;
-                        var freshAttribute = (stack.Attributes["transitionstate"] as ITreeAttribute)?["freshHours"] as FloatArrayAttribute;
-                        if (freshAttribute is null)
-                            continue;
-                        var currentFreshness = freshAttribute.value[0];
-                        Server.WorldManager.SaveGame.StoreData($"{byPlayer.PlayerUID}.{slot.Inventory.InventoryID}.{slot.Inventory.GetSlotId(slot)}.{DataOldFoodSpoil}", currentFreshness);
-                        freshAttribute.value[0] = float.MaxValue;
+                        var attributes = ExtractFreshnessAttributes(stack);
+                        foreach (var attributeSet in attributes)
+                        {
+                            var suffix = attributeSet.Index is not null ? $".{attributeSet.Index}" : "";
+                            var currentFreshness = attributeSet.Fresh.value[0];
+                            Server.WorldManager.SaveGame.StoreData($"{byPlayer.PlayerUID}.{slot.Inventory.InventoryID}.{slot.Inventory.GetSlotId(slot)}{suffix}.{DataOldFoodSpoil}", currentFreshness);
+                            attributeSet.Fresh.value[0] = float.MaxValue;
+                        }
                         slot.MarkDirty();
                     }
                 }
@@ -69,19 +96,19 @@ namespace Wiltoga
                     if (slot.Itemstack is not null)
                     {
                         var stack = slot.Itemstack;
-                        var freshAttribute = (stack.Attributes["transitionstate"] as ITreeAttribute)?["freshHours"] as FloatArrayAttribute;
-                        var createdTotalHours = (stack.Attributes["transitionstate"] as ITreeAttribute)?["createdTotalHours"] as DoubleAttribute;
-                        var lastUpdatedTotalHours = (stack.Attributes["transitionstate"] as ITreeAttribute)?["lastUpdatedTotalHours"] as DoubleAttribute;
-                        if (freshAttribute is null || createdTotalHours is null || lastUpdatedTotalHours is null)
-                            continue;
+                        var attributes = ExtractFreshnessAttributes(stack);
                         var hours = Server.World.Calendar.TotalHours;
-                        var savedFreshness = Server.WorldManager.SaveGame.GetData($"{byPlayer.PlayerUID}.{slot.Inventory.InventoryID}.{slot.Inventory.GetSlotId(slot)}.{DataOldFoodSpoil}", float.MinValue);
-                        if (savedFreshness >= 0)
+                        foreach (var attributeSet in attributes)
                         {
-                            createdTotalHours.value = lastUpdatedTotalHours.value = hours;
-                            freshAttribute.value[0] = savedFreshness;
-                            slot.MarkDirty();
+                            var suffix = attributeSet.Index is not null ? $".{attributeSet.Index}" : "";
+                            var savedFreshness = Server.WorldManager.SaveGame.GetData($"{byPlayer.PlayerUID}.{slot.Inventory.InventoryID}.{slot.Inventory.GetSlotId(slot)}{suffix}.{DataOldFoodSpoil}", float.MinValue);
+                            if (savedFreshness >= 0)
+                            {
+                                attributeSet.LastUpdateHours.value = hours;
+                                attributeSet.Fresh.value[0] = savedFreshness;
+                            }
                         }
+                        slot.MarkDirty();
                     }
                 }
             }
