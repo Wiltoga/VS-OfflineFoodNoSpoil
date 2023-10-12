@@ -24,19 +24,18 @@ namespace Wiltoga
         public override void StartServerSide(ICoreServerAPI api)
         {
             Server = api;
-            Server.Event.PlayerDisconnect += Event_PlayerDisconnect;
             Server.Event.PlayerJoin += Event_PlayerJoin;
         }
 
-        private static List<(FloatArrayAttribute Fresh, DoubleAttribute LastUpdateHours, string? Index)> ExtractFreshnessAttributes(ItemStack stack)
+        private static List<(FloatArrayAttribute Fresh, DoubleAttribute LastUpdateHours)> ExtractFreshnessAttributes(ItemStack stack)
         {
-            var attributes = new List<(FloatArrayAttribute, DoubleAttribute, string?)>();
+            var attributes = new List<(FloatArrayAttribute, DoubleAttribute)>();
             try
             {
                 var freshAttribute = (stack.Attributes["transitionstate"] as ITreeAttribute)?["freshHours"] as FloatArrayAttribute;
                 var lastUpdatedTotalHours = (stack.Attributes["transitionstate"] as ITreeAttribute)?["lastUpdatedTotalHours"] as DoubleAttribute;
                 if (freshAttribute is not null && lastUpdatedTotalHours is not null)
-                    attributes.Add((freshAttribute, lastUpdatedTotalHours, null));
+                    attributes.Add((freshAttribute, lastUpdatedTotalHours));
             }
             catch (Exception e)
             {
@@ -46,15 +45,15 @@ namespace Wiltoga
             var content = stack.Attributes["contents"] as ITreeAttribute;
             if (content is not null)
             {
-                foreach (var set in content)
+                foreach (var set in content.Values)
                 {
                     try
                     {
-                        var contentStack = set.Value as ItemstackAttribute;
+                        var contentStack = set as ItemstackAttribute;
                         var freshAttribute = (contentStack?.value.Attributes["transitionstate"] as ITreeAttribute)?["freshHours"] as FloatArrayAttribute;
                         var lastUpdatedTotalHours = (contentStack?.value.Attributes["transitionstate"] as ITreeAttribute)?["lastUpdatedTotalHours"] as DoubleAttribute;
                         if (freshAttribute is not null && lastUpdatedTotalHours is not null)
-                            attributes.Add((freshAttribute, lastUpdatedTotalHours, set.Key));
+                            attributes.Add((freshAttribute, lastUpdatedTotalHours));
                     }
                     catch (Exception e)
                     {
@@ -64,41 +63,6 @@ namespace Wiltoga
             }
 
             return attributes;
-        }
-
-        private void Event_PlayerDisconnect(IServerPlayer byPlayer)
-        {
-            try
-            {
-                if (Server is null)
-                    return;
-                foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
-                {
-                    if (inventory is null)
-                        continue;
-                    if (inventory.ClassName != "hotbar" && inventory.ClassName != "backpack")
-                        continue;
-                    foreach (var slot in inventory)
-                    {
-                        if (slot.Itemstack is not null)
-                        {
-                            var stack = slot.Itemstack;
-                            var attributes = ExtractFreshnessAttributes(stack);
-                            foreach (var attributeSet in attributes)
-                            {
-                                var suffix = attributeSet.Index is not null ? $".{attributeSet.Index}" : "";
-                                var currentFreshness = attributeSet.Fresh.value;
-                                Server.WorldManager.SaveGame.StoreData($"{byPlayer.PlayerUID}.{slot.Inventory.InventoryID}.{slot.Inventory.GetSlotId(slot)}{suffix}.{DataOldFoodSpoil}", currentFreshness);
-                            }
-                            slot.MarkDirty();
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Server?.Logger.Error(e);
-            }
         }
 
         private void Event_PlayerJoin(IServerPlayer byPlayer)
@@ -122,14 +86,8 @@ namespace Wiltoga
                             var hours = Server.World.Calendar.TotalHours;
                             foreach (var attributeSet in attributes)
                             {
-                                var suffix = attributeSet.Index is not null ? $".{attributeSet.Index}" : "";
-                                var savedFreshness = Server.WorldManager.SaveGame.GetData<float[]?>($"{byPlayer.PlayerUID}.{slot.Inventory.InventoryID}.{slot.Inventory.GetSlotId(slot)}{suffix}.{DataOldFoodSpoil}", null);
-                                if (savedFreshness is not null)
-                                {
-                                    for (int i = 0; i < savedFreshness.Length; i++)
-                                        savedFreshness[i] += (float)(hours - attributeSet.LastUpdateHours.value);
-                                    attributeSet.Fresh.value = savedFreshness;
-                                }
+                                for (int i = 0; i < attributeSet.Fresh.value.Length; i++)
+                                    attributeSet.Fresh.value[i] += (float)(hours - attributeSet.LastUpdateHours.value);
                             }
                             slot.MarkDirty();
                         }
