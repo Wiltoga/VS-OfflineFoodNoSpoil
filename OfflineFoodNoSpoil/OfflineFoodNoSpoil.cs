@@ -1,11 +1,8 @@
-﻿using System;
+﻿using OfflineFoodNoSpoil;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Xml.Schema;
-using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
 
@@ -14,7 +11,8 @@ namespace Wiltoga
     public class OfflineFoodNoSpoil : ModSystem
     {
         public static string DataOldFoodSpoil => "freshness";
-        public static ICoreServerAPI? Server { get; private set; }
+        public static ICoreServerAPI Server { get; private set; } = default!;
+        private string SettingsFile => $"{Mod.Info.ModID}.json";
 
         public override bool ShouldLoad(EnumAppSide forSide)
         {
@@ -24,10 +22,12 @@ namespace Wiltoga
         public override void StartServerSide(ICoreServerAPI api)
         {
             Server = api;
+            // loading to trigger the file creation if it doesn't exist yet
+            LoadSettings();
             Server.Event.PlayerJoin += Event_PlayerJoin;
         }
 
-        private static List<(FloatArrayAttribute Fresh, DoubleAttribute LastUpdateHours)> ExtractFreshnessAttributes(ItemStack stack)
+        private static List<(FloatArrayAttribute Fresh, DoubleAttribute LastUpdateHours)> ExtractFreshnessAttributes(ItemStack stack, Settings settings)
         {
             var attributes = new List<(FloatArrayAttribute, DoubleAttribute)>();
             try
@@ -39,7 +39,8 @@ namespace Wiltoga
             }
             catch (Exception e)
             {
-                Server?.Logger.Error(e);
+                if (settings.UseLogs)
+                    Server.Logger.Error(e);
             }
 
             var content = stack.Attributes["contents"] as ITreeAttribute;
@@ -57,7 +58,8 @@ namespace Wiltoga
                     }
                     catch (Exception e)
                     {
-                        Server?.Logger.Error(e);
+                        if (settings.UseLogs)
+                            Server.Logger.Error(e);
                     }
                 }
             }
@@ -67,16 +69,17 @@ namespace Wiltoga
 
         private void Event_PlayerJoin(IServerPlayer byPlayer)
         {
-            if (Server is null)
-                return;
+            var settings = LoadSettings();
             try
             {
-                Server.Logger.Debug($"Player {byPlayer.PlayerName} joined");
+                if (settings.UseLogs)
+                    Server.Logger.Debug($"Player {byPlayer.PlayerName} joined");
                 foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
                 {
                     if (inventory is null)
                         continue;
-                    Server.Logger.Debug($"Scanning inventory {inventory.ClassName} {inventory.InventoryID}");
+                    if (settings.UseLogs)
+                        Server.Logger.Debug($"Scanning inventory {inventory.ClassName} {inventory.InventoryID}");
                     if (inventory.ClassName != "hotbar" && inventory.ClassName != "backpack")
                         continue;
                     foreach (var slot in inventory)
@@ -84,18 +87,24 @@ namespace Wiltoga
                         if (slot.Itemstack is not null)
                         {
                             var stack = slot.Itemstack;
-                            Server.Logger.Debug($"Scanning slot {inventory.GetSlotId(slot)} {stack.GetName()}");
-                            var attributes = ExtractFreshnessAttributes(stack);
-                            Server.Logger.Debug($"Found {attributes.Count} freshness attributes");
+                            if (settings.UseLogs)
+                                Server.Logger.Debug($"Scanning slot {inventory.GetSlotId(slot)} {stack.GetName()}");
+                            var attributes = ExtractFreshnessAttributes(stack, settings);
+                            if (settings.UseLogs)
+                                Server.Logger.Debug($"Found {attributes.Count} freshness attributes");
                             foreach (var attributeSet in attributes)
                             {
                                 var skip = (float)(Server.World.Calendar.TotalHours - attributeSet.LastUpdateHours.value);
-                                Server.Logger.Debug("SKIP VALUE " + skip);
+                                skip *= 1 - settings.FoodSpoilMultiplier;
+                                if (settings.UseLogs)
+                                    Server.Logger.Debug("Skip time : " + skip);
                                 for (int i = 0; i < attributeSet.Fresh.value.Length; i++)
                                 {
-                                    Server.Logger.Debug("attribute before : " + attributeSet.Fresh.value[i]);
+                                    if (settings.UseLogs)
+                                        Server.Logger.Debug("attribute before : " + attributeSet.Fresh.value[i]);
                                     attributeSet.Fresh.value[i] += skip;
-                                    Server.Logger.Debug("attribute after : " + attributeSet.Fresh.value[i]);
+                                    if (settings.UseLogs)
+                                        Server.Logger.Debug("attribute after : " + attributeSet.Fresh.value[i]);
                                 }
                             }
                             if (attributes.Any())
@@ -106,7 +115,32 @@ namespace Wiltoga
             }
             catch (Exception e)
             {
-                Server?.Logger.Error(e);
+                if (settings.UseLogs)
+                    Server.Logger.Error(e);
+            }
+        }
+
+        private Settings LoadSettings()
+        {
+            try
+            {
+                var settings = Server.LoadModConfig<Settings>(SettingsFile);
+                if (settings is null)
+                {
+                    Server.StoreModConfig(Settings.Default, SettingsFile);
+                    return Settings.Default;
+                }
+                if (settings.FoodSpoilMultiplier < 0 || settings.FoodSpoilMultiplier > 1)
+                {
+                    settings.FoodSpoilMultiplier = Math.Clamp(settings.FoodSpoilMultiplier, 0, 1);
+                    Server.StoreModConfig(settings, SettingsFile);
+                }
+                return settings;
+            }
+            catch
+            {
+                Server.StoreModConfig(Settings.Default, SettingsFile);
+                return Settings.Default;
             }
         }
     }
