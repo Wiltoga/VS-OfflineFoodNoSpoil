@@ -5,6 +5,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
 	  <Nullable>enable</Nullable>
+	  <RootNamespace>Wiltoga.OfflineFoodNoSpoil</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-﻿namespace OfflineFoodNoSpoil;
+﻿namespace Wiltoga.OfflineFoodNoSpoil;
 
 public class Settings
 {
@@ -6,5 +6,5 @@ public class Settings
     public bool UseLogs { get; set; }
     public float FoodSpoilMultiplier { get; set; }
 
-    public static Settings Default => new() { EnableMod = true, UseLogs = true, FoodSpoilMultiplier = 0f };
+    public static Settings Default => new() { EnableMod = true, UseLogs = false, FoodSpoilMultiplier = 0f };
 }
