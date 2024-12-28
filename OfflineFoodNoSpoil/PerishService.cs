@@ -5,7 +5,7 @@ using Vintagestory.API.Server;
 
 namespace Wiltoga.OfflineFoodNoSpoil;
 
-internal class FreshnessService
+internal class PerishService
 {
     private static readonly string[] InventoriesWhitelist = new[]
  {
@@ -13,7 +13,7 @@ internal class FreshnessService
         "backpack",
     };
     private readonly ICoreServerAPI server;
-    internal FreshnessService(ICoreServerAPI server)
+    internal PerishService(ICoreServerAPI server)
     {
         this.server = server;
     }
@@ -38,19 +38,8 @@ internal class FreshnessService
                         var stack = slot.Itemstack;
                         if (settings.UseLogs)
                             server.Logger.VerboseDebug($"Scanning slot {inventory.GetSlotId(slot)} {stack.GetName()}");
-                        var itemFreshness = new ItemFreshness(stack);
-                        if (itemFreshness.HasFreshness)
-                        {
-                            foreach (var state in itemFreshness.AllStates)
-                            {
-                                var skip = (float)(server.World.Calendar.TotalHours - state.LastUpdatedTotalHours.value);
-                                skip *= 1 - settings.FoodSpoilMultiplier;
-                                if (settings.UseLogs)
-                                    server.Logger.VerboseDebug("Skip time : " + skip);
-                                state.LastUpdatedTotalHours.value += skip;
-                            }
-                            slot.MarkDirty();
-                        }
+                        var itemPerish = new ItemPerishValue(stack);
+                        ResetPerish(itemPerish, settings);
                     }
                     catch (Exception e)
                     {
@@ -65,6 +54,14 @@ internal class FreshnessService
             if (settings.UseLogs)
                 server.Logger.Error(e);
         }
+    }
 
+    private void ResetPerish(ItemPerishValue item, Settings settings)
+    {
+        item.ResetUpdatedTotalHours(server.World, settings);
+        foreach (var content in item.Content)
+        {
+            ResetPerish(content, settings);
+        }
     }
 }

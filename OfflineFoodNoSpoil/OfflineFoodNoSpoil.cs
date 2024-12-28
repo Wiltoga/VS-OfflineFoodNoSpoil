@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
@@ -8,7 +7,7 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 public class OfflineFoodNoSpoil : ModSystem
 {
     public static ICoreServerAPI Server { get; private set; } = default!;
-    internal static FreshnessService FreshnessService { get; private set; } = default!;
+    internal static PerishService FreshnessService { get; private set; } = default!;
     private string SettingsFile => $"{Mod.Info.ModID}.json";
 
     public override bool ShouldLoad(EnumAppSide forSide)
@@ -19,13 +18,13 @@ public class OfflineFoodNoSpoil : ModSystem
     public override void StartServerSide(ICoreServerAPI api)
     {
         Server = api;
-        FreshnessService = new FreshnessService(Server);
+        FreshnessService = new PerishService(Server);
         // loading to trigger the file creation if it doesn't exist yet
         LoadSettings();
-        Server.Event.PlayerNowPlaying += Event_PlayerNowPlaying;
+        Server.Event.PlayerJoin += Event_PlayerJoin;
     }
 
-    private void Event_PlayerNowPlaying(IServerPlayer byPlayer)
+    private void Event_PlayerJoin(IServerPlayer byPlayer)
     {
         var settings = LoadSettings();
 
