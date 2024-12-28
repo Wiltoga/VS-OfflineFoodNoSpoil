@@ -29,11 +29,14 @@ public class OfflineFoodNoSpoil : ModSystem
     {
         var settings = LoadSettings();
 
-        foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
+        if (settings.EnableMod)
         {
-            if (inventory is not null)
+            foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
             {
-                FreshnessService.PreventInventorySpoil(inventory, settings);
+                if (inventory is not null)
+                {
+                    FreshnessService.PreventInventorySpoil(inventory, settings);
+                }
             }
         }
     }
