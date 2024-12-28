@@ -51,9 +51,25 @@ public class OfflineFoodNoSpoil : ModSystem
                 Server.StoreModConfig(Settings.Default, SettingsFile);
                 return Settings.Default;
             }
+            else
+            {
+                // force update to new version, so that it includes all new fields
+                Server.StoreModConfig(settings, SettingsFile);
+            }
+            var hasErrors = false;
+
             if (settings.FoodSpoilMultiplier < 0 || settings.FoodSpoilMultiplier > 1)
             {
+                hasErrors = true;
                 settings.FoodSpoilMultiplier = Math.Clamp(settings.FoodSpoilMultiplier, 0, 1);
+            }
+            if (settings.MaxAllowedSkippedHours < 0)
+            {
+                hasErrors = true;
+                settings.MaxAllowedSkippedHours = null;
+            }
+            if (hasErrors)
+            {
                 Server.StoreModConfig(settings, SettingsFile);
             }
             return settings;

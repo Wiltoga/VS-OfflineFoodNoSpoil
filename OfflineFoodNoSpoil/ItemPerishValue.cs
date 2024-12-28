@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProperVersion;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Common;
@@ -47,8 +48,12 @@ public class ItemPerishValue
         {
             var itemLastUpdatedTotalHours = Stack.Attributes.GetTreeAttribute("transitionstate").GetDouble("lastUpdatedTotalHours");
             var elapsedHours = world.Calendar.TotalHours - itemLastUpdatedTotalHours;
-            elapsedHours *= settings.FoodSpoilMultiplier;
-            Stack.Attributes.GetTreeAttribute("transitionstate").SetDouble("lastUpdatedTotalHours", world.Calendar.TotalHours - elapsedHours);
+            var skippedHours = elapsedHours * (1 - settings.FoodSpoilMultiplier);
+            if (settings.MaxAllowedSkippedHours is not null)
+            {
+                skippedHours = Math.Min(skippedHours, settings.MaxAllowedSkippedHours.Value);
+            }
+            Stack.Attributes.GetTreeAttribute("transitionstate").SetDouble("lastUpdatedTotalHours", itemLastUpdatedTotalHours + skippedHours);
         }
     }
 
