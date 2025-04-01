@@ -6,9 +6,15 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 
 public class OfflineFoodNoSpoil : ModSystem
 {
-    public static ICoreServerAPI Server { get; private set; } = default!;
+    public ICoreServerAPI Server { get; private set; } = default!;
+    public static OfflineFoodNoSpoil Instance { get; private set; } = default!;
     internal static PerishService FreshnessService { get; private set; } = default!;
     private string SettingsFile => $"{Mod.Info.ModID}.json";
+
+    public OfflineFoodNoSpoil()
+    {
+        Instance = this;
+    }
 
     public override bool ShouldLoad(EnumAppSide forSide)
     {
@@ -18,15 +24,23 @@ public class OfflineFoodNoSpoil : ModSystem
     public override void StartServerSide(ICoreServerAPI api)
     {
         Server = api;
-        FreshnessService = new PerishService(Server);
         // loading to trigger the file creation if it doesn't exist yet
-        LoadSettings();
+        var settings = LoadSettings();
+        ConditionalLogger.Settings = settings;
+
+        ConditionalLogger.Info($"Starting {Mod.Info.Name}");
+
+        FreshnessService = new PerishService(Server);
         Server.Event.PlayerJoin += Event_PlayerJoin;
     }
 
     private void Event_PlayerJoin(IServerPlayer byPlayer)
     {
         var settings = LoadSettings();
+
+        ConditionalLogger.Settings = settings;
+
+        ConditionalLogger.Debug($"Player {byPlayer.PlayerName} joined");
 
         if (settings.EnableMod)
         {
@@ -37,6 +51,10 @@ public class OfflineFoodNoSpoil : ModSystem
                     FreshnessService.PreventInventorySpoil(inventory, settings);
                 }
             }
+        }
+        else
+        {
+            ConditionalLogger.Debug($"Mod is disabled, aborting");
         }
     }
 
