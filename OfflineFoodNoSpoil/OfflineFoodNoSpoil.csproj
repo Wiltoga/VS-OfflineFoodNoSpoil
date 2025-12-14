@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
 	  <Nullable>enable</Nullable>
 	  <RootNamespace>Wiltoga.OfflineFoodNoSpoil</RootNamespace>
-	  <Version>1.4.0</Version>
+	  <Version>1.5.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
