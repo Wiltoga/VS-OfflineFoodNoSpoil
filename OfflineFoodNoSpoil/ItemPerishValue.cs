@@ -76,7 +76,7 @@ public class ItemPerishValue
         if (PerishState is not null && ModData is not null)
         {
             // setting food to way higher fresh hour to hold its freeze state
-            PerishState.FreshHours = 10000000;
+            PerishState.FreshHours = float.MaxValue;
             PerishState.TransitionedHours = 0;
         }
     }
