@@ -7,38 +7,41 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 
 internal class PerishService
 {
-    private static readonly string[] InventoriesWhitelist = new[]
- {
-        "hotbar",
-        "backpack",
-    };
+    private static readonly string[] InventoriesBlacklist =
+    [
+        "creative"
+    ];
     private readonly ICoreServerAPI server;
     internal PerishService(ICoreServerAPI server)
     {
         this.server = server;
     }
 
-    internal void PreventInventorySpoil(IInventory inventory, Settings settings)
+    internal void SaveSnapshot(IInventory? inventory, Settings settings)
     {
+        if (inventory is null)
+        {
+            return;
+        }
+
         using (ConditionalLogger.Indent())
         {
             try
             {
-                if (!InventoriesWhitelist.Contains(inventory.ClassName))
+                if (InventoriesBlacklist.Contains(inventory.ClassName, StringComparer.Ordinal))
                 {
                     ConditionalLogger.Debug($"Skipping inventory {inventory.ClassName} as it is not a supported inventory");
                     return;
                 }
                 foreach (var slot in inventory)
                 {
-                    if (slot.Itemstack is not null)
+                    if (slot?.Itemstack is not null)
                     {
                         try
                         {
                             var stack = slot.Itemstack;
                             ConditionalLogger.Debug($"Scanning slot {inventory.GetSlotId(slot)} {stack.GetName()}");
-                            var itemPerish = new ItemPerishValue(stack);
-                            ResetPerish(itemPerish, settings);
+                            SnapPerish(new(stack), settings);
                         }
                         catch (Exception e)
                         {
@@ -54,19 +57,88 @@ internal class PerishService
         }
     }
 
-    private void ResetPerish(ItemPerishValue item, Settings settings)
+    internal void PreventInventorySpoil(IInventory? inventory, Settings settings)
+    {
+        if (inventory is null)
+        {
+            return;
+        }
+
+        using (ConditionalLogger.Indent())
+        {
+            try
+            {
+                if (InventoriesBlacklist.Contains(inventory.ClassName, StringComparer.Ordinal))
+                {
+                    ConditionalLogger.Debug($"Skipping inventory {inventory.ClassName} as it is not a supported inventory");
+                    return;
+                }
+                foreach (var slot in inventory)
+                {
+                    if (slot?.Itemstack is not null)
+                    {
+                        try
+                        {
+                            var stack = slot.Itemstack;
+                            ConditionalLogger.Debug($"Scanning slot {inventory.GetSlotId(slot)} {stack.GetName()}");
+                            if (ResetPerish(new(stack), settings))
+                            {
+                                slot.MarkDirty();
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            ConditionalLogger.Error(e);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ConditionalLogger.Error(e);
+            }
+        }
+    }
+
+    private bool ResetPerish(ItemPerishValue item, Settings settings)
     {
         using (ConditionalLogger.Indent())
         {
-            item.ResetUpdatedTotalHours(server.World, settings);
-            if (item.Content.Length > 0)
+            var requiresUnFreeze = item.SkipElapsedHours(server.World, settings);
+            if (requiresUnFreeze)
+            {
+                item.UnFreezeTime(server.World, settings);
+            }
+            if (item.Contents is not null)
             {
                 ConditionalLogger.Debug($"Scanning content of the stack");
-                foreach (var content in item.Content)
+                foreach (var content in item.Contents.Stacks)
                 {
-                    ResetPerish(content, settings);
+                    requiresUnFreeze |= ResetPerish(new(content), settings);
                 }
             }
+            return requiresUnFreeze;
+        }
+    }
+
+    private bool SnapPerish(ItemPerishValue item, Settings settings)
+    {
+        using (ConditionalLogger.Indent())
+        {
+            var requiresFreeze = item.SnapState(server.World, settings);
+            if (requiresFreeze)
+            {
+                item.FreezeTime(server.World, settings);
+            }
+            if (item.Contents is not null)
+            {
+                ConditionalLogger.Debug($"Scanning content of the stack");
+                foreach (var content in item.Contents.Stacks)
+                {
+                    requiresFreeze |= SnapPerish(new(content), settings);
+                }
+            }
+            return requiresFreeze;
         }
     }
 }

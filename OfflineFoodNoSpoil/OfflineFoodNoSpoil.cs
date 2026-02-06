@@ -31,25 +31,70 @@ public class OfflineFoodNoSpoil : ModSystem
         ConditionalLogger.Info($"Starting {Mod.Info.Name}");
 
         FreshnessService = new PerishService(Server);
-        Server.Event.PlayerJoin += Event_PlayerJoin;
+        Server.Event.PlayerNowPlaying += Event_PlayerNowPlaying;
+        Server.Event.PlayerDisconnect += Event_PlayerDisconnect;
     }
 
-    private void Event_PlayerJoin(IServerPlayer byPlayer)
+    private void Event_PlayerNowPlaying(IServerPlayer byPlayer)
     {
         var settings = LoadSettings();
 
         ConditionalLogger.Settings = settings;
 
-        ConditionalLogger.Debug($"Player {byPlayer.PlayerName} joined");
+        ConditionalLogger.Debug($"Player {byPlayer.PlayerName} now playing");
 
         if (settings.EnableMod)
         {
-            foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
+            try
             {
-                if (inventory is not null)
+                if (byPlayer.InventoryManager?.Inventories?.Values is null)
+                    return;
+
+                foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
                 {
-                    FreshnessService.PreventInventorySpoil(inventory, settings);
+                    if (inventory is not null)
+                    {
+                        FreshnessService.PreventInventorySpoil(inventory, settings);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                ConditionalLogger.Error(e);
+            }
+        }
+        else
+        {
+            ConditionalLogger.Debug($"Mod is disabled, aborting");
+        }
+    }
+
+    private void Event_PlayerDisconnect(IServerPlayer byPlayer)
+    {
+        var settings = LoadSettings();
+
+        ConditionalLogger.Settings = settings;
+
+        ConditionalLogger.Debug($"Player {byPlayer.PlayerName} disconnected");
+
+        if (settings.EnableMod)
+        {
+            try
+            {
+                if (byPlayer.InventoryManager?.Inventories?.Values is null)
+                    return;
+
+                foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
+                {
+                    if (inventory is not null)
+                    {
+                        FreshnessService.SaveSnapshot(inventory, settings);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ConditionalLogger.Error(e);
             }
         }
         else
