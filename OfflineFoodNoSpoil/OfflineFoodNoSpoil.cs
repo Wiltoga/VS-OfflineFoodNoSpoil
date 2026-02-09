@@ -31,17 +31,17 @@ public class OfflineFoodNoSpoil : ModSystem
         ConditionalLogger.Info($"Starting {Mod.Info.Name}");
 
         FreshnessService = new PerishService(Server);
-        Server.Event.PlayerNowPlaying += Event_PlayerNowPlaying;
+        Server.Event.PlayerJoin += Event_PlayerJoin;
         Server.Event.PlayerDisconnect += Event_PlayerDisconnect;
     }
 
-    private void Event_PlayerNowPlaying(IServerPlayer byPlayer)
+    private void Event_PlayerJoin(IServerPlayer byPlayer)
     {
         var settings = LoadSettings();
 
         ConditionalLogger.Settings = settings;
 
-        ConditionalLogger.Debug($"Player {byPlayer.PlayerName} now playing");
+        ConditionalLogger.Debug($"Player {byPlayer.PlayerName} joined");
 
         if (settings.EnableMod)
         {

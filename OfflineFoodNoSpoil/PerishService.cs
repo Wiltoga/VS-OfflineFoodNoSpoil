@@ -81,10 +81,7 @@ internal class PerishService
                         {
                             var stack = slot.Itemstack;
                             ConditionalLogger.Debug($"Scanning slot {inventory.GetSlotId(slot)} {stack.GetName()}");
-                            if (ResetPerish(new(stack), settings))
-                            {
-                                slot.MarkDirty();
-                            }
+                            ResetPerish(new(stack), settings);
                         }
                         catch (Exception e)
                         {
@@ -100,45 +97,37 @@ internal class PerishService
         }
     }
 
-    private bool ResetPerish(ItemPerishValue item, Settings settings)
+    private void ResetPerish(ItemPerishValue item, Settings settings)
     {
         using (ConditionalLogger.Indent())
         {
-            var requiresUnFreeze = item.SkipElapsedHours(server.World, settings);
-            if (requiresUnFreeze)
-            {
-                item.UnFreezeTime(server.World, settings);
-            }
+            item.UnFreezeTime(server.World, settings);
+            item.SkipElapsedHours(server.World, settings);
             if (item.Contents is not null)
             {
                 ConditionalLogger.Debug($"Scanning content of the stack");
                 foreach (var content in item.Contents.Stacks)
                 {
-                    requiresUnFreeze |= ResetPerish(new(content), settings);
+                    ResetPerish(new(content), settings);
                 }
             }
-            return requiresUnFreeze;
         }
     }
 
-    private bool SnapPerish(ItemPerishValue item, Settings settings)
+    private void SnapPerish(ItemPerishValue item, Settings settings)
     {
         using (ConditionalLogger.Indent())
         {
-            var requiresFreeze = item.SnapState(server.World, settings);
-            if (requiresFreeze)
-            {
-                item.FreezeTime(server.World, settings);
-            }
+            item.SnapState(server.World, settings);
+            item.FreezeTime(server.World, settings);
             if (item.Contents is not null)
             {
                 ConditionalLogger.Debug($"Scanning content of the stack");
                 foreach (var content in item.Contents.Stacks)
                 {
-                    requiresFreeze |= SnapPerish(new(content), settings);
+                    SnapPerish(new(content), settings);
                 }
             }
-            return requiresFreeze;
         }
     }
 }

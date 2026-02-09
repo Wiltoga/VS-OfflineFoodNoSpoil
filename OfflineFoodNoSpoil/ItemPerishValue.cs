@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Wiltoga.OfflineFoodNoSpoil.Attributes;
 
@@ -33,14 +34,14 @@ public class ItemPerishValue
         Contents = new(stack.Attributes);
     }
 
-    public bool SkipElapsedHours(IWorldAccessor world, Settings settings)
+    public void SkipElapsedHours(IWorldAccessor world, Settings settings)
     {
-        if (PerishState is not null && ModData is not null)
+        if (PerishState is not null && ModData is not null && ModData.Frozen is not true)
         {
             var itemLastUpdatedTotalHours = ModData.DisconnectTotalHours ?? PerishState.LastUpdatedTotalHours;
             if (itemLastUpdatedTotalHours is null)
             {
-                return false;
+                return;
             }
             var elapsedHours = world.Calendar.TotalHours - itemLastUpdatedTotalHours.Value;
             ConditionalLogger.Debug($"Computed elapsed minutes : {elapsedHours * 60:0.##}");
@@ -53,22 +54,17 @@ public class ItemPerishValue
             }
             ConditionalLogger.Debug($"Final skipped minutes leap : {skippedHours * 60:0.##}");
             PerishState.LastUpdatedTotalHours = itemLastUpdatedTotalHours + skippedHours;
-
-            return true;
         }
-        return false;
     }
 
-    public bool SnapState(IWorldAccessor world, Settings settings)
+    public void SnapState(IWorldAccessor world, Settings settings)
     {
-        if (PerishState is not null && ModData is not null)
+        if (PerishState is not null && ModData is not null && ModData.Frozen is not true)
         {
-            ModData.DisconnectTotalHours = world.Calendar.TotalHours;
+            ModData.DisconnectTotalHours = PerishState.LastUpdatedTotalHours;
             ModData.DisconnectTransitionedHours = PerishState.TransitionedHours;
             ModData.DisconnectFreshHours = PerishState.FreshHours;
-            return true;
         }
-        return false;
     }
 
     public void FreezeTime(IWorldAccessor world, Settings settings)
@@ -77,13 +73,14 @@ public class ItemPerishValue
         {
             // setting food to way higher fresh hour to hold its freeze state
             PerishState.FreshHours = float.MaxValue;
-            PerishState.TransitionedHours = 0;
+
+            ModData.Frozen = true;
         }
     }
 
     public void UnFreezeTime(IWorldAccessor world, Settings settings)
     {
-        if (PerishState is not null && ModData is not null)
+        if (PerishState is not null && ModData is not null && ModData.Frozen is not false)
         {
             if (ModData.DisconnectFreshHours is not null)
             {
@@ -93,6 +90,9 @@ public class ItemPerishValue
             {
                 PerishState.TransitionedHours = ModData.DisconnectTransitionedHours;
             }
+
+            // cleaning is needed as the ingredients corrupt somehow
+            ModData.DeleteData();
         }
     }
 }
