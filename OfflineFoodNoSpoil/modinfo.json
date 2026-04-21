@@ -1,14 +1,14 @@
 {
-  "type": "code",
-  "name": "No offline food spoil",
-  "modid": "offlinefoodnospoil",
-  "version": "1.5.0",
-  "description": "Prevent player inventory food spoiling when the player is offline",
-  "website": "https://github.com/Wiltoga/VS-OfflineFoodNoSpoil",
-  "authors": [
+  "Type": "Code",
+  "Name": "No offline food spoil",
+  "Modid": "offlinefoodnospoil",
+  "Version": "1.5.1",
+  "Description": "Prevent player inventory food spoiling when the player is offline",
+  "Website": "https://github.com/Wiltoga/VS-OfflineFoodNoSpoil",
+  "Authors": [
     "Wiltoga"
   ],
-  "side": "server",
-  "requiredOnClient": false,
-  "requiredOnServer": true
+  "Side": "Server",
+  "RequiredOnClient": false,
+  "RequiredOnServer": true
 }

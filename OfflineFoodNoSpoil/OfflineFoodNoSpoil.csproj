@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
-	  <Nullable>enable</Nullable>
-	  <RootNamespace>Wiltoga.OfflineFoodNoSpoil</RootNamespace>
-	  <Version>1.5.0</Version>
+    <Nullable>enable</Nullable>
+	  <Author>Wiltoga</Author>
+	  <AssemblyName>$(Author).$(MSBuildProjectName)</AssemblyName>
+	  <RootNamespace>$(AssemblyName.Replace(" ", "_"))</RootNamespace>
+	  <Version>1.5.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,8 +19,8 @@
   </ItemGroup>
 
 <ItemGroup>
-  <Content Include="assets\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  <Content Include="modinfo - Copier.json">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
   </Content>
   <Content Include="modinfo.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -26,9 +28,9 @@
 </ItemGroup>
 
 <ItemGroup>
-  <None Update="modicon.png">
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </None>
+  <Content Include="modicon.png" Condition="Exists('modicon.png')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </Content>
 </ItemGroup>
 
 </Project>
