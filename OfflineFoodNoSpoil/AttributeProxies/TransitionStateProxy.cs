@@ -1,12 +1,11 @@
 ﻿using System.Linq;
 using Vintagestory.API.Datastructures;
 
-namespace Wiltoga.OfflineFoodNoSpoil.Attributes;
+namespace Wiltoga.OfflineFoodNoSpoil.AttributeProxies;
 
-public class Transitionstate(ITreeAttribute? attributes)
+public class TransitionStateProxy(ITreeAttribute? attributes) : AttributeProxy(attributes)
 {
-    private const string AttributeName = "transitionstate";
-    private ITreeAttribute? Tree => attributes?.GetTreeAttribute(AttributeName);
+    protected override string AttributeName => "transitionstate";
 
     public double? LastUpdatedTotalHours
     {

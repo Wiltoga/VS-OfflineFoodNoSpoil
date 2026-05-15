@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -7,10 +8,6 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 
 internal class PerishService
 {
-    private static readonly string[] InventoriesBlacklist =
-    [
-        "creative"
-    ];
     private readonly ICoreServerAPI server;
     internal PerishService(ICoreServerAPI server)
     {
@@ -32,22 +29,6 @@ internal class PerishService
                 {
                     ConditionalLogger.Debug($"Skipping inventory {inventory.ClassName} as it is not a supported inventory");
                     return;
-                }
-                foreach (var slot in inventory)
-                {
-                    if (slot?.Itemstack is not null)
-                    {
-                        try
-                        {
-                            var stack = slot.Itemstack;
-                            ConditionalLogger.Debug($"Scanning slot {inventory.GetSlotId(slot)} {stack.GetName()}");
-                            SnapPerish(new(stack), settings);
-                        }
-                        catch (Exception e)
-                        {
-                            ConditionalLogger.Error(e);
-                        }
-                    }
                 }
             }
             catch (Exception e)
@@ -97,7 +78,7 @@ internal class PerishService
         }
     }
 
-    private void ResetPerish(ItemPerishValue item, Settings settings)
+    private void ResetPerish(ItemPerishMapping item, Settings settings)
     {
         using (ConditionalLogger.Indent())
         {
@@ -114,7 +95,7 @@ internal class PerishService
         }
     }
 
-    private void SnapPerish(ItemPerishValue item, Settings settings)
+    private void SnapPerish(ItemPerishMapping item, Settings settings)
     {
         using (ConditionalLogger.Indent())
         {
@@ -131,3 +112,4 @@ internal class PerishService
         }
     }
 }
+*/

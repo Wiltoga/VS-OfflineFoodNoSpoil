@@ -1,5 +1,4 @@
-﻿using System;
-using Vintagestory.API.Common;
+﻿using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
 namespace Wiltoga.OfflineFoodNoSpoil;
@@ -8,8 +7,6 @@ public class OfflineFoodNoSpoil : ModSystem
 {
     public ICoreServerAPI Server { get; private set; } = default!;
     public static OfflineFoodNoSpoil Instance { get; private set; } = default!;
-    internal static PerishService FreshnessService { get; private set; } = default!;
-    private string SettingsFile => $"{Mod.Info.ModID}.json";
 
     public OfflineFoodNoSpoil()
     {
@@ -24,123 +21,39 @@ public class OfflineFoodNoSpoil : ModSystem
     public override void StartServerSide(ICoreServerAPI api)
     {
         Server = api;
-        // loading to trigger the file creation if it doesn't exist yet
-        var settings = LoadSettings();
-        ConditionalLogger.Settings = settings;
+        using (var scope = Scope.New())
+        {
+            // loading to trigger the settings file creation if it doesn't exist yet
+            _ = scope.Get<ISettingsService>().Settings;
+            var logger = scope.Get<IModLogger>();
 
-        ConditionalLogger.Info($"Starting {Mod.Info.Name}");
+            logger.Info($"Starting {Mod.Info.Name}");
+        }
 
-        FreshnessService = new PerishService(Server);
         Server.Event.PlayerJoin += Event_PlayerJoin;
         Server.Event.PlayerDisconnect += Event_PlayerDisconnect;
     }
 
     private void Event_PlayerJoin(IServerPlayer byPlayer)
     {
-        var settings = LoadSettings();
+        using var scope = Scope.New();
+        var handler = scope.Get<IPlayerEventsHandler>();
 
-        ConditionalLogger.Settings = settings;
-
-        ConditionalLogger.Debug($"Player {byPlayer.PlayerName} joined");
-
-        if (settings.EnableMod)
-        {
-            try
-            {
-                if (byPlayer.InventoryManager?.Inventories?.Values is null)
-                    return;
-
-                foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
-                {
-                    if (inventory is not null)
-                    {
-                        FreshnessService.PreventInventorySpoil(inventory, settings);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                ConditionalLogger.Error(e);
-            }
-        }
-        else
-        {
-            ConditionalLogger.Debug($"Mod is disabled, aborting");
-        }
+        handler.PlayerJoined(byPlayer);
     }
 
     private void Event_PlayerDisconnect(IServerPlayer byPlayer)
     {
-        var settings = LoadSettings();
+        using var scope = Scope.New();
+        var handler = scope.Get<IPlayerEventsHandler>();
 
-        ConditionalLogger.Settings = settings;
-
-        ConditionalLogger.Debug($"Player {byPlayer.PlayerName} disconnected");
-
-        if (settings.EnableMod)
-        {
-            try
-            {
-                if (byPlayer.InventoryManager?.Inventories?.Values is null)
-                    return;
-
-                foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
-                {
-                    if (inventory is not null)
-                    {
-                        FreshnessService.SaveSnapshot(inventory, settings);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                ConditionalLogger.Error(e);
-            }
-        }
-        else
-        {
-            ConditionalLogger.Debug($"Mod is disabled, aborting");
-        }
+        handler.PlayerDisconnected(byPlayer);
     }
 
-
-    private Settings LoadSettings()
+    public override void Dispose()
     {
-        try
-        {
-            var settings = Server.LoadModConfig<Settings>(SettingsFile);
-            if (settings is null)
-            {
-                Server.StoreModConfig(Settings.Default, SettingsFile);
-                return Settings.Default;
-            }
-            else
-            {
-                // force update to new version, so that it includes all new fields
-                Server.StoreModConfig(settings, SettingsFile);
-            }
-            var hasErrors = false;
-
-            if (settings.FoodSpoilMultiplier < 0 || settings.FoodSpoilMultiplier > 1)
-            {
-                hasErrors = true;
-                settings.FoodSpoilMultiplier = Math.Clamp(settings.FoodSpoilMultiplier, 0, 1);
-            }
-            if (settings.MaxAllowedSkippedHours < 0)
-            {
-                hasErrors = true;
-                settings.MaxAllowedSkippedHours = null;
-            }
-            if (hasErrors)
-            {
-                Server.StoreModConfig(settings, SettingsFile);
-            }
-            return settings;
-        }
-        catch
-        {
-            Server.StoreModConfig(Settings.Default, SettingsFile);
-            return Settings.Default;
-        }
+        base.Dispose();
+        Server.Event.PlayerJoin -= Event_PlayerJoin;
+        Server.Event.PlayerDisconnect -= Event_PlayerDisconnect;
     }
 }
