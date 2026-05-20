@@ -7,18 +7,20 @@ internal class TimeSkipService : ITimeSkipService
 {
     private readonly ICoreServerAPI server;
     private readonly IModLogger logger;
-    private readonly Settings settings;
+    private readonly ISettingsService settingsService;
 
     public TimeSkipService()
     {
         server = Scope.Inject<ICoreServerAPI>();
         logger = Scope.Inject<IModLogger>();
-        settings = Scope.Inject<ISettingsService>().Settings;
+        settingsService = Scope.Inject<ISettingsService>();
     }
 
-    public double GetSkippedTime(double hourReference)
+    public float GetSkippedTime(double hourReference)
     {
-        var elapsedHours = server.World.Calendar.TotalHours - hourReference;
+        var settings = settingsService.Settings;
+
+        var elapsedHours = (float)(server.World.Calendar.TotalHours - hourReference);
         logger.Debug($"Computed elapsed minutes : {elapsedHours * 60:0.##}");
         var skippedHours = elapsedHours * (1 - settings.FoodSpoilMultiplier);
         logger.Debug($"Skipped minutes after applying the {settings.FoodSpoilMultiplier} multiplier : {skippedHours * 60:0.##}");

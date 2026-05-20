@@ -7,7 +7,7 @@ public class Locator : ILocator
 {
     private readonly Dictionary<Type, Func<object>> configuration = [];
 
-    public T Get<T>()
+    public T Get<T>() where T : class
     {
         if (configuration.TryGetValue(typeof(T), out var ctor))
         {

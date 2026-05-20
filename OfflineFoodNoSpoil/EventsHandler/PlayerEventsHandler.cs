@@ -7,12 +7,12 @@ internal class PlayerEventsHandler : IPlayerEventsHandler
 {
     private readonly IModLogger logger;
     private readonly IInventoryScanner inventoryScanner;
-    private readonly Settings settings;
+    private readonly ISettingsService settingsService;
 
     public PlayerEventsHandler()
     {
         logger = Scope.Inject<IModLogger>();
-        settings = Scope.Inject<ISettingsService>().Settings;
+        settingsService = Scope.Inject<ISettingsService>();
         inventoryScanner = Scope.Inject<IInventoryScanner>();
     }
 
@@ -20,7 +20,7 @@ internal class PlayerEventsHandler : IPlayerEventsHandler
     {
         logger.Debug($"Player {byPlayer.PlayerName} joined");
         
-        if (settings.EnableMod)
+        if (settingsService.Settings.EnableMod)
         {
             if (byPlayer.InventoryManager?.Inventories?.Values is null)
             {
@@ -34,9 +34,13 @@ internal class PlayerEventsHandler : IPlayerEventsHandler
 
                     foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
                     {
-                        if (inventory is not null && !settings.InventoriesBlacklist.Contains(inventory.ClassName, StringComparer.OrdinalIgnoreCase))
+                        logger.Debug($"Unfreeze inventory {inventory?.ClassName}");
+                        if (inventory is not null && !settingsService.Settings.InventoriesBlacklist.Contains(inventory.ClassName, StringComparer.OrdinalIgnoreCase))
                         {
-                            inventoryScanner.FreezeInventory(inventory, byPlayer);
+                            using (logger.Indent())
+                            {
+                                inventoryScanner.UnfreezeInventory(inventory, byPlayer);
+                            }
                         }
                         else
                         {
@@ -60,7 +64,7 @@ internal class PlayerEventsHandler : IPlayerEventsHandler
     {
         logger.Debug($"Player {byPlayer.PlayerName} disconnected");
 
-        if (settings.EnableMod)
+        if (settingsService.Settings.EnableMod)
         {
             try
             {
@@ -72,9 +76,13 @@ internal class PlayerEventsHandler : IPlayerEventsHandler
                 {
                     foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
                     {
-                        if (inventory is not null && !settings.InventoriesBlacklist.Contains(inventory.ClassName, StringComparer.OrdinalIgnoreCase))
+                        logger.Debug($"Freeze inventory {inventory?.ClassName}");
+                        if (inventory is not null && !settingsService.Settings.InventoriesBlacklist.Contains(inventory.ClassName, StringComparer.OrdinalIgnoreCase))
                         {
-                            inventoryScanner.UnfreezeInventory(inventory, byPlayer);
+                            using (logger.Indent())
+                            {
+                                inventoryScanner.FreezeInventory(inventory, byPlayer);
+                            }
                         }
                         else
                         {

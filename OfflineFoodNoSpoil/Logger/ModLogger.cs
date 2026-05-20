@@ -6,7 +6,7 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 
 internal class ModLogger : IModLogger
 {
-    private readonly Settings settings;
+    private readonly ISettingsService settingsService;
     private readonly ICoreServerAPI server;
     private readonly Mod mod;
     private int currentIndent = 0;
@@ -15,7 +15,7 @@ internal class ModLogger : IModLogger
     
     public ModLogger()
     {
-        settings = Scope.Inject<ISettingsService>().Settings;
+        settingsService = Scope.Inject<ISettingsService>();
         server = Scope.Inject<ICoreServerAPI>();
         mod = Scope.Inject<Mod>();
     }
@@ -24,7 +24,7 @@ internal class ModLogger : IModLogger
 
     public void Debug(string message)
     {
-        if (settings.UseLogs)
+        if (settingsService.Settings.UseLogs)
         {
             server.Logger.Debug(Prefix + ComputeIndent(currentIndent) + message);
         }
@@ -33,6 +33,11 @@ internal class ModLogger : IModLogger
     public void Info(string message)
     {
         server.Logger.Notification(Prefix + ComputeIndent(currentIndent) + message);
+    }
+
+    public void Warning(string message)
+    {
+        server.Logger.Warning(Prefix + ComputeIndent(currentIndent) + message);
     }
 
     public void Error(Exception exception)

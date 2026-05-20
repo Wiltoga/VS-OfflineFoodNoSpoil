@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Common;
+using Vintagestory.API.Server;
 using Wiltoga.OfflineFoodNoSpoil.AttributeProxies;
 
 namespace Wiltoga.OfflineFoodNoSpoil;
@@ -9,20 +10,65 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 internal class ItemPerishService : IItemPerishService
 {
     private readonly IModLogger logger;
+    private readonly ITimeSkipService timeSkipService;
+    private readonly ICoreServerAPI server;
 
     public ItemPerishService()
     {
         logger = Scope.Inject<IModLogger>();
+        timeSkipService = Scope.Inject<ITimeSkipService>();
+        server = Scope.Inject<ICoreServerAPI>();
     }
 
-    public void FreezeItem(IInventory inventory, ItemPerishMapping item)
+    public ModData? FreezeItem(IInventory inventory, ItemPerishMapping item)
     {
-        // todo: freeze item
+        logger.Debug($"Freeze item {item.Name}");
+        if (item.TransitionState is not null)
+        {
+            logger.Debug($"Item has transition state");
+            return new()
+            {
+                DisconnectTotalHours = server.World.Calendar.TotalHours,
+            };
+        }
+        else
+        {
+            logger.Debug($"Item has no transition state");
+            return null;
+        }
     }
 
-    public void UnfreezeItem(IInventory inventory, ItemPerishMapping item)
+    public void UnfreezeItem(IInventory inventory, ItemPerishMapping item, ModData? modData)
     {
-        // todo: unfreeze item
+        logger.Debug($"Unfreeze item {item.Name}");
+        if (modData is null)
+        {
+            logger.Debug($"No mod data provided");
+            return;
+        }
+        if (item.TransitionState is not null)
+        {
+            logger.Debug($"Item has transition state");
+            if (item.TransitionState.FreshHours is null)
+            {
+                logger.Warning($"Invalid item {item.Name} : no FreshHours in attributes");
+                return;
+            }
+            if (item.TransitionState.TransitionHours is null)
+            {
+                logger.Warning($"Invalid item {item.Name} : no TransitionHours in attributes");
+                return;
+            }
+            var skippedTime = timeSkipService.GetSkippedTime(modData.DisconnectTotalHours);
+
+            item.TransitionState.FreshHours = item.TransitionState.FreshHours.Select(hours => hours + skippedTime).ToArray();
+            item.TransitionState.TransitionHours = item.TransitionState.TransitionHours.Select(hours => hours + skippedTime).ToArray();
+        }
+        else
+        {
+            logger.Debug($"Item has no transition state");
+            return;
+        }
     }
 
     public ItemPerishMapping[] GetItemPerishMappings(ItemSlot slot)
@@ -63,6 +109,7 @@ internal class ItemPerishService : IItemPerishService
 
         return new()
         {
+            Name = parent is null ? $"{stack.Collectible?.Code}" : $"{parent.Name}-{stack.Collectible?.Code}[{index}]",
             Key = parent is null ? "stack" : $"{parent.Key}:{index}",
             Contents = contents,
             TransitionState = transitionState,

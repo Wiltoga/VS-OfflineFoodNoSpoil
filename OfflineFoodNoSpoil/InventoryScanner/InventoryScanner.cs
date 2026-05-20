@@ -45,13 +45,49 @@ internal class InventoryScanner : IInventoryScanner
     {
         foreach(var scan in ScanInventory(inventory))
         {
-            var modData = modDataManager.TryGetModData(player, inventory, scan.Slot, scan.Mappings);
+            using (logger.Indent())
+            {
+                Dictionary<string, ModData> slotModData = [];
+                foreach (var mapping in scan.Mappings)
+                {
+                    using (logger.Indent())
+                    {
+                        var modData = itemPerishService.FreezeItem(inventory, mapping);
 
+                        if (modData is not null)
+                        {
+                            slotModData[mapping.Key] = modData;
+                        }
+                    }
+                }
+                if (slotModData.Keys.Count > 0)
+                {
+                    modDataManager.SaveModData(player, inventory, scan.Slot, slotModData);
+                }
+                else
+                {
+                    logger.Debug($"No data to save");
+                }
+            }
         }
     }
 
     public void UnfreezeInventory(IInventory inventory, IPlayer player)
     {
-        ScanInventory(inventory);
+        foreach (var scan in ScanInventory(inventory))
+        {
+            using (logger.Indent())
+            {
+                var slotModData = modDataManager.TryGetModData(player, inventory, scan.Slot, scan.Mappings);
+
+                foreach (var mapping in scan.Mappings)
+                {
+                    ModData? modData = null;
+                    slotModData?.TryGetValue(mapping.Key, out modData);
+
+                    itemPerishService.UnfreezeItem(inventory, mapping, modData);
+                }
+            }
+        }
     }
 }

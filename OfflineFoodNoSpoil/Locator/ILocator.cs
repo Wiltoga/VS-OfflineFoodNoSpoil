@@ -2,5 +2,5 @@
 
 public interface ILocator
 {
-    T Get<T>();
+    T Get<T>() where T : class;
 }

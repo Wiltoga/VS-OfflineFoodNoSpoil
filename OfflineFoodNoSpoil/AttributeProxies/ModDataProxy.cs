@@ -11,6 +11,7 @@ namespace Wiltoga.OfflineFoodNoSpoil.AttributeProxies;
 [Obsolete("Nothing should be stored in the item as it corrupts some parts of the game. Class still used for compatibility.")]
 public class ModDataProxy(ITreeAttribute? attributes) : AttributeProxy(attributes)
 {
+    readonly private ITreeAttribute? attributes = attributes;
     protected override string AttributeName => $"{OfflineFoodNoSpoil.Instance.Mod.Info.ModID}:transitionstate";
 
     public void DeleteData()
@@ -18,23 +19,8 @@ public class ModDataProxy(ITreeAttribute? attributes) : AttributeProxy(attribute
         attributes?.RemoveAttribute(AttributeName);
     }
 
-    public float? DisconnectTransitionedHours
-    {
-        get => Tree?.TryGetFloat("disconnectTransitionedHours");
-    }
-
-    public float? DisconnectFreshHours
-    {
-        get => Tree?.TryGetFloat("disconnectFreshHours");
-    }
-
     public double? DisconnectTotalHours
     {
         get => Tree?.TryGetDouble("disconnectTotalHours");
-    }
-
-    public bool? Frozen
-    {
-        get => Tree?.TryGetBool("frozen");
     }
 }

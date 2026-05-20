@@ -1,6 +1,6 @@
 ﻿namespace Wiltoga.OfflineFoodNoSpoil;
 
-public class Settings
+public record Settings
 {
     public bool EnableMod { get; set; } = true;
     public bool UseLogs { get; set; } = false;

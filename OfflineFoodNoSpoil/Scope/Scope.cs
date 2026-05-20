@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Wiltoga.OfflineFoodNoSpoil;
 
@@ -8,7 +9,7 @@ public sealed class Scope : IScope
     private readonly Dictionary<Type, object?> cache = [];
 
     public static IScope Current { get; private set; } = default!;
-    public static T Inject<T>() => Current.Get<T>();
+    public static T Inject<T>() where T : class => Current.Get<T>();
 
     private Scope()
     {
@@ -17,9 +18,16 @@ public sealed class Scope : IScope
     
     public static IScope New() => new Scope();
 
-    public void Dispose() => Current = null!;
+    public void Dispose()
+    {
+        foreach (var disposable in cache.Values.OfType<IDisposable>())
+        {
+            disposable.Dispose();
+        }
+        Current = null!;
+    }
 
-    public T Get<T>()
+    public T Get<T>() where T : class
     {
         if (cache.TryGetValue(typeof(T), out var t))
         {

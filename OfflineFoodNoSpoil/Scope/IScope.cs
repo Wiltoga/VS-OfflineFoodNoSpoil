@@ -4,7 +4,7 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 
 public interface IScope : IDisposable
 {
-    T Get<T>();
+    T Get<T>() where T : class;
 
     abstract static IScope New();
 }

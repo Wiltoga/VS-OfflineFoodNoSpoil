@@ -45,9 +45,9 @@ public class TransitionStateProxy(ITreeAttribute? attributes) : AttributeProxy(a
         }
     }
 
-    public float? TransitionedHours
+    public float[]? TransitionedHours
     {
-        get => (Tree?["transitionedHours"] as FloatArrayAttribute)?.value.AverageOrDefault();
+        get => (Tree?["transitionedHours"] as FloatArrayAttribute)?.value;
         set
         {
             if (Tree is not null)
@@ -58,16 +58,18 @@ public class TransitionStateProxy(ITreeAttribute? attributes) : AttributeProxy(a
                 }
                 else if (value is not null)
                 {
-                    var count = (Tree["transitionedHours"] as FloatArrayAttribute)?.value.Length ?? 1;
-                    Tree["transitionedHours"] = new FloatArrayAttribute(Enumerable.Repeat(value.Value, count).ToArray());
+                    Tree["transitionedHours"] = new FloatArrayAttribute(value);
                 }
             }
         }
     }
 
-    public float? TransitionHours
+    /// <summary>
+    /// Total freshness duration of the stack
+    /// </summary>
+    public float[]? TransitionHours
     {
-        get => (Tree?["transitionHours"] as FloatArrayAttribute)?.value.AverageOrDefault();
+        get => (Tree?["transitionHours"] as FloatArrayAttribute)?.value;
         set
         {
             if (Tree is not null)
@@ -78,16 +80,18 @@ public class TransitionStateProxy(ITreeAttribute? attributes) : AttributeProxy(a
                 }
                 else if (value is not null)
                 {
-                    var count = (Tree["transitionHours"] as FloatArrayAttribute)?.value.Length ?? 1;
-                    Tree["transitionHours"] = new FloatArrayAttribute(Enumerable.Repeat(value.Value, count).ToArray());
+                    Tree["transitionHours"] = new FloatArrayAttribute(value);
                 }
             }
         }
     }
 
-    public float? FreshHours
+    /// <summary>
+    /// Remaining time of available freshness
+    /// </summary>
+    public float[]? FreshHours
     {
-        get => (Tree?["freshHours"] as FloatArrayAttribute)?.value.AverageOrDefault();
+        get => (Tree?["freshHours"] as FloatArrayAttribute)?.value;
         set
         {
             if (Tree is not null)
@@ -98,8 +102,7 @@ public class TransitionStateProxy(ITreeAttribute? attributes) : AttributeProxy(a
                 }
                 else if (value is not null)
                 {
-                    var count = (Tree["freshHours"] as FloatArrayAttribute)?.value.Length ?? 1;
-                    Tree["freshHours"] = new FloatArrayAttribute(Enumerable.Repeat(value.Value, count).ToArray());
+                    Tree["freshHours"] = new FloatArrayAttribute(value);
                 }
             }
         }

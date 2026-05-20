@@ -2,5 +2,5 @@
 
 public interface ITimeSkipService
 {
-    double GetSkippedTime(double reference);
+    float GetSkippedTime(double reference);
 }
