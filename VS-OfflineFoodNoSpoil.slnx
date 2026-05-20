@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="CakeBuild/CakeBuild.csproj" />
+  <Project Path="OfflineFoodNoSpoil.Tests/OfflineFoodNoSpoil.Tests.csproj" />
   <Project Path="OfflineFoodNoSpoil/OfflineFoodNoSpoil.csproj" />
 </Solution>
