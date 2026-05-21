@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
@@ -11,5 +12,10 @@ public class ContentsProxy(ITreeAttribute? attributes) : AttributeProxy(attribut
     /// <summary>
     /// The list of stacks in this attribute tree
     /// </summary>
-    public ItemStack[] Stacks => Tree?.Values?.OfType<ItemstackAttribute>().Select(set => set.value).Where(stack => stack is not null).ToArray() ?? [];
+    public Dictionary<string, ItemStack> Stacks => Tree?
+        .Where(pair => pair.Value is ItemstackAttribute { value: not null })
+        .ToDictionary(
+            pair => pair.Key,
+            pair => ((ItemstackAttribute)pair.Value).value)
+        ?? [];
 }

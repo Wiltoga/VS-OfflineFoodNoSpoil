@@ -42,7 +42,7 @@ internal class ModLogger : IModLogger
 
     public void Error(Exception exception)
     {
-        server.Logger.Error(Prefix + exception);
+        server.Logger.Error($"{Prefix}{Environment.NewLine}Version[{mod.Info.Version}] : {exception}");
     }
 
     public IDisposable Indent()

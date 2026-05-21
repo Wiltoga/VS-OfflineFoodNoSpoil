@@ -39,7 +39,7 @@ internal class PlayerEventsHandler : IPlayerEventsHandler
                         {
                             using (logger.Indent())
                             {
-                                inventoryScanner.UnfreezeInventory(inventory, byPlayer);
+                                inventoryScanner.UnfreezeInventory(inventory);
                             }
                         }
                         else
@@ -81,7 +81,7 @@ internal class PlayerEventsHandler : IPlayerEventsHandler
                         {
                             using (logger.Indent())
                             {
-                                inventoryScanner.FreezeInventory(inventory, byPlayer);
+                                inventoryScanner.FreezeInventory(inventory);
                             }
                         }
                         else

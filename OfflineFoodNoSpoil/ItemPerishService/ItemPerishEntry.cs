@@ -2,7 +2,7 @@
 
 namespace Wiltoga.OfflineFoodNoSpoil;
 
-public record ItemPerishMapping
+public record ItemPerishEntry
 {
     public required string Key { get; init; }
 

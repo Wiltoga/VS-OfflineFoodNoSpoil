@@ -5,7 +5,7 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 
 public interface IModDataManager
 {
-    // TODO: delete the mappings parameter when full 2.0 of the mod comes out
-    Dictionary<string, ModData>? TryGetModData(IPlayer player, IInventory inventory, ItemSlot slot, IEnumerable<ItemPerishMapping> mappings);
-    void SaveModData(IPlayer player, IInventory inventory, ItemSlot slot, Dictionary<string, ModData> data);
+    // TODO: delete the entrys parameter when full 2.0 of the mod comes out
+    Dictionary<string, ModData>? TryGetModData(IInventory inventory, ItemSlot slot, IEnumerable<ItemPerishEntry> entrys);
+    void SaveModData(IInventory inventory, ItemSlot slot, Dictionary<string, ModData> data);
 }

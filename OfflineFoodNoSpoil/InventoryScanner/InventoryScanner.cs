@@ -9,7 +9,7 @@ internal class InventoryScanner : IInventoryScanner
     private record SlotScan
     {
         public required ItemSlot Slot { get; init; }
-        public required ItemPerishMapping[] Mappings { get; init; }
+        public required ItemPerishEntry[] Entries { get; init; }
     }
 
     private readonly IModLogger logger;
@@ -29,40 +29,40 @@ internal class InventoryScanner : IInventoryScanner
         {
             var stack = slot.Itemstack!;
 
-            logger.Debug($"Scanning slot {inventory.GetSlotId(slot)} {stack.GetName()}");
+            logger.Debug($"Scanning slot {inventory.GetSlotId(slot)} {stack.Collectible?.Code}");
 
-            var mappings = itemPerishService.GetItemPerishMappings(slot);
+            var entries = itemPerishService.GetItemPerishEntries(slot);
 
             yield return new()
             {
                 Slot = slot,
-                Mappings = mappings,
+                Entries = entries,
             };
         }
     }
 
-    public void FreezeInventory(IInventory inventory, IPlayer player)
+    public void FreezeInventory(IInventory inventory)
     {
         foreach(var scan in ScanInventory(inventory))
         {
             using (logger.Indent())
             {
                 Dictionary<string, ModData> slotModData = [];
-                foreach (var mapping in scan.Mappings)
+                foreach (var entry in scan.Entries)
                 {
                     using (logger.Indent())
                     {
-                        var modData = itemPerishService.FreezeItem(inventory, mapping);
+                        var modData = itemPerishService.FreezeItem(inventory, entry);
 
                         if (modData is not null)
                         {
-                            slotModData[mapping.Key] = modData;
+                            slotModData[entry.Key] = modData;
                         }
                     }
                 }
                 if (slotModData.Keys.Count > 0)
                 {
-                    modDataManager.SaveModData(player, inventory, scan.Slot, slotModData);
+                    modDataManager.SaveModData(inventory, scan.Slot, slotModData);
                 }
                 else
                 {
@@ -72,20 +72,20 @@ internal class InventoryScanner : IInventoryScanner
         }
     }
 
-    public void UnfreezeInventory(IInventory inventory, IPlayer player)
+    public void UnfreezeInventory(IInventory inventory)
     {
         foreach (var scan in ScanInventory(inventory))
         {
             using (logger.Indent())
             {
-                var slotModData = modDataManager.TryGetModData(player, inventory, scan.Slot, scan.Mappings);
+                var slotModData = modDataManager.TryGetModData(inventory, scan.Slot, scan.Entries);
 
-                foreach (var mapping in scan.Mappings)
+                foreach (var entry in scan.Entries)
                 {
                     ModData? modData = null;
-                    slotModData?.TryGetValue(mapping.Key, out modData);
+                    slotModData?.TryGetValue(entry.Key, out modData);
 
-                    itemPerishService.UnfreezeItem(inventory, mapping, modData);
+                    itemPerishService.UnfreezeItem(inventory, entry, modData);
                 }
             }
         }

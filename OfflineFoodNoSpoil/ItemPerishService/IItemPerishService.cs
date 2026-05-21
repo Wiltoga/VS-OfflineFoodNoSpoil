@@ -2,11 +2,11 @@
 
 namespace Wiltoga.OfflineFoodNoSpoil;
 
-internal interface IItemPerishService
+public interface IItemPerishService
 {
-    ModData? FreezeItem(IInventory inventory, ItemPerishMapping item);
+    ModData? FreezeItem(IInventory inventory, ItemPerishEntry item);
 
-    ItemPerishMapping[] GetItemPerishMappings(ItemSlot slot);
+    ItemPerishEntry[] GetItemPerishEntries(ItemSlot slot);
 
-    void UnfreezeItem(IInventory inventory, ItemPerishMapping item, ModData? modData);
+    void UnfreezeItem(IInventory inventory, ItemPerishEntry item, ModData? modData);
 }

@@ -20,7 +20,7 @@ internal class ItemPerishService : IItemPerishService
         server = Scope.Inject<ICoreServerAPI>();
     }
 
-    public ModData? FreezeItem(IInventory inventory, ItemPerishMapping item)
+    public ModData? FreezeItem(IInventory inventory, ItemPerishEntry item)
     {
         logger.Debug($"Freeze item {item.Name}");
         if (item.TransitionState is not null)
@@ -38,7 +38,7 @@ internal class ItemPerishService : IItemPerishService
         }
     }
 
-    public void UnfreezeItem(IInventory inventory, ItemPerishMapping item, ModData? modData)
+    public void UnfreezeItem(IInventory inventory, ItemPerishEntry item, ModData? modData)
     {
         logger.Debug($"Unfreeze item {item.Name}");
         if (modData is null)
@@ -71,39 +71,39 @@ internal class ItemPerishService : IItemPerishService
         }
     }
 
-    public ItemPerishMapping[] GetItemPerishMappings(ItemSlot slot)
+    public ItemPerishEntry[] GetItemPerishEntries(ItemSlot slot)
     {
         ArgumentNullException.ThrowIfNull(slot.Itemstack);
         var stack = slot.Itemstack;
 
-        return GetAllMappings(slot.Itemstack, null, default).ToArray();
+        return GetAllEntries(slot.Itemstack, null, default).ToArray();
     }
 
-    private IEnumerable<ItemPerishMapping> GetAllMappings(ItemStack stack, ItemPerishMapping? parent, int index)
+    private IEnumerable<ItemPerishEntry> GetAllEntries(ItemStack stack, ItemPerishEntry? parent, string? index)
     {
         using (logger.Indent())
         {
-            var current = GetMapping(stack, parent, index);
+            var current = GetEntry(stack, parent, index);
 
             yield return current;
 
-            if (current.Contents.Stacks.Length == 0)
+            if (current.Contents.Stacks.Keys.Count == 0)
             {
-                logger.Debug($"Stack {stack.GetName()} has no content");
+                logger.Debug($"Stack {stack.Collectible?.Code} has no content");
             }
 
-            for (int i = 0; i < current.Contents.Stacks.Length; ++i)
+            foreach(var pair in current.Contents.Stacks)
             {
-                var subStack = current.Contents.Stacks[i];
-                foreach (var subMapping in GetAllMappings(subStack, current, i))
+                var subStack = pair.Value;
+                foreach (var subEntry in GetAllEntries(subStack, current, pair.Key))
                 {
-                    yield return subMapping;
+                    yield return subEntry;
                 }
             }
         }
     }
 
-    private ItemPerishMapping GetMapping(ItemStack stack, ItemPerishMapping? parent, int index)
+    private ItemPerishEntry GetEntry(ItemStack stack, ItemPerishEntry? parent, string? index)
     {
         var (contents, transitionState, oldModData) = GetProxies(stack);
 
@@ -125,12 +125,12 @@ internal class ItemPerishService : IItemPerishService
 
         if (stack.Collectible?.TransitionableProps?.Any(property => property?.Type is EnumTransitionType.Perish) is not null)
         {
-            logger.Debug($"Stack {stack.GetName()} is perishable");
+            logger.Debug($"Stack {stack.Collectible?.Code} is perishable");
             transitionstate = new(stack.Attributes);
         }
         else
         {
-            logger.Debug($"Stack {stack.GetName()} is not perishable");
+            logger.Debug($"Stack {stack.Collectible?.Code} is not perishable");
         }
 
         return (contents, transitionstate, oldModData);

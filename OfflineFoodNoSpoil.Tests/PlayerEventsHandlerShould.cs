@@ -26,8 +26,8 @@ public class PlayerEventsHandlerShould : ScopedTest
         handler.PlayerJoined(player);
         handler.PlayerDisconnected(player);
 
-        inventoryScanner.DidNotReceiveWithAnyArgs().FreezeInventory(default!, default!);
-        inventoryScanner.DidNotReceiveWithAnyArgs().UnfreezeInventory(default!, default!);
+        inventoryScanner.DidNotReceiveWithAnyArgs().FreezeInventory(default!);
+        inventoryScanner.DidNotReceiveWithAnyArgs().UnfreezeInventory(default!);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class PlayerEventsHandlerShould : ScopedTest
 
         handler.PlayerJoined(player);
 
-        inventoryScanner.Received(1).UnfreezeInventory(inventory, player);
+        inventoryScanner.Received(1).UnfreezeInventory(inventory);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class PlayerEventsHandlerShould : ScopedTest
 
         handler.PlayerDisconnected(player);
 
-        inventoryScanner.Received(1).FreezeInventory(inventory, player);
+        inventoryScanner.Received(1).FreezeInventory(inventory);
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class PlayerEventsHandlerShould : ScopedTest
 
         handler.PlayerJoined(player);
 
-        inventoryScanner.DidNotReceive().UnfreezeInventory(inventory, player);
+        inventoryScanner.DidNotReceive().UnfreezeInventory(inventory);
     }
 
     [Fact]
@@ -105,6 +105,6 @@ public class PlayerEventsHandlerShould : ScopedTest
 
         handler.PlayerDisconnected(player);
 
-        inventoryScanner.DidNotReceive().FreezeInventory(inventory, player);
+        inventoryScanner.DidNotReceive().FreezeInventory(inventory);
     }
 }

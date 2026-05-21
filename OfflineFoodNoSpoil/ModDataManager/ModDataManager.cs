@@ -48,21 +48,21 @@ internal sealed class ModDataManager : IModDataManager, IDisposable
         logger = Scope.Inject<IModLogger>();
     }
 
-    public Dictionary<string, ModData>? TryGetModData(IPlayer player, IInventory inventory, ItemSlot slot, IEnumerable<ItemPerishMapping> mappings)
+    public Dictionary<string, ModData>? TryGetModData(IInventory inventory, ItemSlot slot, IEnumerable<ItemPerishEntry> entries)
     {
-        var saveGameData = TryGetModDataFromSaveData(player, inventory, slot);
+        var saveGameData = TryGetModDataFromSaveData(inventory, slot);
         
         if (saveGameData is not null)
         {
             return saveGameData;
         }
 
-        var legacyData = TryGetModDataFromMappings(mappings);
+        var legacyData = TryGetModDataFromEntries(entries);
 
         return legacyData;
     }
 
-    public void SaveModData(IPlayer player, IInventory inventory, ItemSlot slot, Dictionary<string, ModData> data)
+    public void SaveModData(IInventory inventory, ItemSlot slot, Dictionary<string, ModData> data)
     {
         string uniqueId = $"{inventory.InventoryID}[{inventory.GetSlotId(slot)}]";
         logger.Debug($"Saving data entry with id {uniqueId}");
@@ -71,7 +71,7 @@ internal sealed class ModDataManager : IModDataManager, IDisposable
         requiresSave = true;
     }
 
-    private Dictionary<string, ModData>? TryGetModDataFromSaveData(IPlayer player, IInventory inventory, ItemSlot slot)
+    private Dictionary<string, ModData>? TryGetModDataFromSaveData(IInventory inventory, ItemSlot slot)
     {
         string uniqueId = $"{inventory.InventoryID}[{inventory.GetSlotId(slot)}]";
         logger.Debug($"Retrieving data entry with id {uniqueId}");
@@ -85,19 +85,19 @@ internal sealed class ModDataManager : IModDataManager, IDisposable
     /// <summary>
     /// Method used to fetch old data that was saved in the item attributes
     /// </summary>
-    /// <param name="mappings"></param>
+    /// <param name="entrys"></param>
     /// <returns></returns>
-    private Dictionary<string, ModData>? TryGetModDataFromMappings(IEnumerable<ItemPerishMapping> mappings)
+    private Dictionary<string, ModData>? TryGetModDataFromEntries(IEnumerable<ItemPerishEntry> entrys)
     {
-        var result = mappings.Where(mapping => mapping.OldModData.DisconnectTotalHours.HasValue).ToDictionary(
-            mapping => mapping.Key,
-            mapping => new ModData
+        var result = entrys.Where(entry => entry.OldModData.DisconnectTotalHours.HasValue).ToDictionary(
+            entry => entry.Key,
+            entry => new ModData
             {
-                DisconnectTotalHours = (float)mapping.OldModData.DisconnectTotalHours!,
+                DisconnectTotalHours = (float)entry.OldModData.DisconnectTotalHours!,
             });
 
         // cleanup of legacy data
-        foreach (var oldData in mappings.Select(mapping => mapping.OldModData).Where(oldData => oldData.Exists))
+        foreach (var oldData in entrys.Select(entry => entry.OldModData).Where(oldData => oldData.Exists))
         {
             oldData.DeleteData();
         }

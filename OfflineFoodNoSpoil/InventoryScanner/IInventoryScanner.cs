@@ -4,7 +4,7 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 
 public interface IInventoryScanner
 {
-    void FreezeInventory(IInventory inventory, IPlayer player);
+    void FreezeInventory(IInventory inventory);
 
-    void UnfreezeInventory(IInventory inventory, IPlayer player);
+    void UnfreezeInventory(IInventory inventory);
 }
