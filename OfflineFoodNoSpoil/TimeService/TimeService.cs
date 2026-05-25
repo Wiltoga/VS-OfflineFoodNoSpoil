@@ -16,7 +16,7 @@ internal class TimeService : ITimeService
         settingsService = Scope.Inject<ISettingsService>();
     }
 
-    public float GetSkippedTime(double hourReference)
+    public float GetSkippedTimeSince(double hourReference)
     {
         var settings = settingsService.Settings;
 

@@ -54,7 +54,7 @@ public class ItemPerishServiceShould : ScopedTest
         };
         entry.TransitionState.FreshHours.Returns([1, 2, 3]);
         entry.TransitionState.TransitionHours.Returns([10, 20, 30]);
-        timeService.GetSkippedTime(default!).Returns(5);
+        timeService.GetSkippedTimeSince(default!).Returns(5);
         ModData modData = new()
         {
             DisconnectTotalHours = 0,

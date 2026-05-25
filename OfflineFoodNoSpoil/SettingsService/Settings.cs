@@ -2,10 +2,10 @@
 
 public record Settings
 {
-    public bool EnableMod { get; set; } = true;
-    public bool UseLogs { get; set; } = false;
-    public float FoodSpoilMultiplier { get; set; } = 0f;
-    public float? MaxAllowedSkippedHours { get; set; } = null;
-    public string[] InventoriesBlacklist { get; set; } = ["creative"];
-    public static Settings Default => new();
+    public bool EnableMod { get; init; } = true;
+    public bool UseLogs { get; init; } = false;
+    public float FoodSpoilMultiplier { get; init; } = 0f;
+    public float? MaxAllowedSkippedHours { get; init; } = null;
+    public string[] InventoriesBlacklist { get; init; } = ["creative"];
+    public static Settings Default { get; } = new();
 }

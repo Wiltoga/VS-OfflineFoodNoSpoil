@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
@@ -7,15 +8,15 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 internal class SettingsService : ISettingsService
 {
     private readonly ICoreServerAPI server;
-    private readonly Mod mod;
+    private readonly ModInfo modInfo;
     private readonly Lazy<Settings> settings;
     
-    private string SettingsFile => $"{mod.Info.ModID}.json";
+    internal string SettingsFile => $"{modInfo.ModID}.json";
 
     public SettingsService()
     {
         server = Scope.Inject<ICoreServerAPI>();
-        mod = Scope.Inject<Mod>();
+        modInfo = Scope.Inject<ModInfo>();
         settings = new(() =>
         {
             try
@@ -26,32 +27,9 @@ internal class SettingsService : ISettingsService
                     server.StoreModConfig(Settings.Default, SettingsFile);
                     return Settings.Default;
                 }
-                else
-                {
-                    // force update to new version, so that it includes all new fields
-                    server.StoreModConfig(settings, SettingsFile);
-                }
-                var hasErrors = false;
 
-                if (settings.FoodSpoilMultiplier < 0 || settings.FoodSpoilMultiplier > 1)
-                {
-                    hasErrors = true;
-                    settings.FoodSpoilMultiplier = Math.Clamp(settings.FoodSpoilMultiplier, 0, 1);
-                }
-                if (settings.MaxAllowedSkippedHours < 0)
-                {
-                    hasErrors = true;
-                    settings.MaxAllowedSkippedHours = null;
-                }
-                if (settings.InventoriesBlacklist is null || settings.InventoriesBlacklist.Length == 0)
-                {
-                    hasErrors = true;
-                    settings.InventoriesBlacklist = Settings.Default.InventoriesBlacklist;
-                }
-                if (hasErrors)
-                {
-                    server.StoreModConfig(settings, SettingsFile);
-                }
+                ValidateSettings(ref settings);
+                server.StoreModConfig(settings, SettingsFile);
                 return settings;
             }
             catch
@@ -63,4 +41,52 @@ internal class SettingsService : ISettingsService
     }
 
     public Settings Settings => settings.Value;
+
+    private static bool ValidateSettings(ref Settings settings)
+    {
+        var hasErrors = false;
+        if (settings.FoodSpoilMultiplier is float.NaN)
+        {
+            hasErrors = true;
+            settings = settings with
+            {
+                FoodSpoilMultiplier = Settings.Default.FoodSpoilMultiplier,
+            };
+        }
+        if (settings.FoodSpoilMultiplier is < 0 or > 1)
+        {
+            hasErrors = true;
+            settings = settings with
+            {
+                FoodSpoilMultiplier = Math.Clamp(settings.FoodSpoilMultiplier, 0, 1),
+            };
+        }
+
+        if (settings.MaxAllowedSkippedHours is float.NaN or < 0)
+        {
+            hasErrors = true;
+            settings = settings with
+            {
+                MaxAllowedSkippedHours = null,
+            };
+        }
+
+        if (settings.InventoriesBlacklist?.Contains(null) is true)
+        {
+            hasErrors = true;
+            settings = settings with
+            {
+                InventoriesBlacklist = [.. settings.InventoriesBlacklist.Where(inventoryClass => inventoryClass is not null)],
+            };
+        }
+        if (settings.InventoriesBlacklist?.Length is not > 0)
+        {
+            hasErrors = true;
+            settings = settings with
+            {
+                InventoriesBlacklist = Settings.Default.InventoriesBlacklist,
+            };
+        }
+        return hasErrors;
+    }
 }

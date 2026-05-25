@@ -58,7 +58,7 @@ internal class ItemPerishService : IItemPerishService
                 logger.Warning($"Invalid item {item.Name} : no TransitionHours in attributes");
                 return;
             }
-            var skippedTime = timeSkipService.GetSkippedTime(modData.DisconnectTotalHours);
+            var skippedTime = timeSkipService.GetSkippedTimeSince(modData.DisconnectTotalHours);
 
             item.TransitionState.FreshHours = item.TransitionState.FreshHours.Select(hours => hours + skippedTime).ToArray();
             item.TransitionState.TransitionHours = item.TransitionState.TransitionHours.Select(hours => hours + skippedTime).ToArray();

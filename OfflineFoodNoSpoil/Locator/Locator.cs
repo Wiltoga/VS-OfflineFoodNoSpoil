@@ -45,7 +45,7 @@ public class Locator : ILocator
             .Set<ICoreAPI>(self => self.Get<ICoreServerAPI>())
             .Set(self => self.Get<ICoreAPI>().World.Calendar)
             .Set(self => self.Get<ICoreServerAPI>().WorldManager.SaveGame)
-            .Set(() => OfflineFoodNoSpoil.Instance.Mod)
+            .Set(() => OfflineFoodNoSpoil.Instance.Mod.Info)
             .Set<ISettingsService, SettingsService>()
             .Set<IItemPerishService, ItemPerishService>()
             .Set<IModDataManager, ModDataManager>()

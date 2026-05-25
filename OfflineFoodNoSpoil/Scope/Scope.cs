@@ -18,7 +18,14 @@ public sealed class Scope : IDisposable
         Current = this;
     }
     
-    public static Scope New() => new Scope();
+    public static Scope New()
+    {
+        if (Current is null)
+        {
+            return new();
+        }
+        throw new InvalidOperationException("A scope is already created.");
+    }
 
     public void Dispose()
     {
