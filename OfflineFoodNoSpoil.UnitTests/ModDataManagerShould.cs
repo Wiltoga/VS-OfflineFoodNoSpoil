@@ -4,9 +4,9 @@ using NSubstitute;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using Wiltoga.OfflineFoodNoSpoil.AttributeProxies;
-using Wiltoga.OfflineFoodNoSpoil.Tests.Substitutes;
+using Wiltoga.OfflineFoodNoSpoil.UnitTests.Substitutes;
 
-namespace Wiltoga.OfflineFoodNoSpoil.Tests;
+namespace Wiltoga.OfflineFoodNoSpoil.UnitTests;
 
 public class ModDataManagerShould : ScopedTest
 {

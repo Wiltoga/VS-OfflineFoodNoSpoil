@@ -2,7 +2,7 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
-namespace Wiltoga.OfflineFoodNoSpoil.Tests.Substitutes
+namespace Wiltoga.OfflineFoodNoSpoil.UnitTests.Substitutes
 {
     internal static class SubstituteInventory
     {

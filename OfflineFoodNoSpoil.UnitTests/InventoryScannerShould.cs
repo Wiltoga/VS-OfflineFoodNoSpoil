@@ -1,9 +1,9 @@
 ﻿using AwesomeAssertions;
 using NSubstitute;
 using Vintagestory.API.Common;
-using Wiltoga.OfflineFoodNoSpoil.Tests.Substitutes;
+using Wiltoga.OfflineFoodNoSpoil.UnitTests.Substitutes;
 
-namespace Wiltoga.OfflineFoodNoSpoil.Tests;
+namespace Wiltoga.OfflineFoodNoSpoil.UnitTests;
 
 public class InventoryScannerShould : ScopedTest
 {

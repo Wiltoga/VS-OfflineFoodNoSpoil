@@ -3,7 +3,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Vintagestory.API.Server;
 
-namespace Wiltoga.OfflineFoodNoSpoil.Tests;
+namespace Wiltoga.OfflineFoodNoSpoil.UnitTests;
 
 public class SettingsServiceShould : ScopedTest
 {

@@ -12,7 +12,7 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="$(Author).$(MSBuildProjectName).Tests" />
+		<InternalsVisibleTo Include="$(Author).$(MSBuildProjectName).UnitTests" />
 	</ItemGroup>
 	
   <ItemGroup>

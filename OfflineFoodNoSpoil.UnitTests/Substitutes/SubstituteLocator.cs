@@ -1,6 +1,6 @@
 ﻿using NSubstitute;
 
-namespace Wiltoga.OfflineFoodNoSpoil.Tests.Substitutes;
+namespace Wiltoga.OfflineFoodNoSpoil.UnitTests.Substitutes;
 
 internal class SubstituteLocator : ILocator
 {

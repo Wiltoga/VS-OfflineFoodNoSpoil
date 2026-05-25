@@ -2,7 +2,7 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
-namespace Wiltoga.OfflineFoodNoSpoil.Tests;
+namespace Wiltoga.OfflineFoodNoSpoil.UnitTests;
 
 public class PlayerEventsHandlerShould : ScopedTest
 {

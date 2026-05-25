@@ -2,7 +2,7 @@
 using NSubstitute;
 using Vintagestory.API.Common;
 
-namespace Wiltoga.OfflineFoodNoSpoil.Tests;
+namespace Wiltoga.OfflineFoodNoSpoil.UnitTests;
 
 public class TimeServiceShould : ScopedTest
 {

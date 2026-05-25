@@ -1,7 +1,7 @@
 ﻿using NSubstitute;
 using Wiltoga.OfflineFoodNoSpoil.Tests.Substitutes;
 
-namespace Wiltoga.OfflineFoodNoSpoil.Tests;
+namespace Wiltoga.OfflineFoodNoSpoil.UnitTests;
 
 public class ScopedTest : IDisposable
 {
