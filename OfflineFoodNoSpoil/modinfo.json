@@ -2,7 +2,7 @@
   "Type": "Code",
   "Name": "No offline food spoil",
   "Modid": "offlinefoodnospoil",
-  "Version": "2.0.1-dev.1",
+  "Version": "2.0.1-dev.2",
   "Description": "Prevent player inventory food spoiling when the player is offline",
   "Website": "https://github.com/Wiltoga/VS-OfflineFoodNoSpoil",
   "Authors": [

@@ -8,9 +8,13 @@
 	  <Author>Wiltoga</Author>
 	  <AssemblyName>$(Author).$(MSBuildProjectName)</AssemblyName>
 	  <RootNamespace>$(AssemblyName.Replace(" ", "_"))</RootNamespace>
-	  <Version>2.0.1-dev.1</Version>
+	  <Version>2.0.1-dev.2</Version>
   </PropertyGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="$(Author).$(MSBuildProjectName).Tests" />
+	</ItemGroup>
+	
   <ItemGroup>
     <Reference Include="VintagestoryAPI">
       <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
