@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Common;
-using Vintagestory.API.Server;
 using Wiltoga.OfflineFoodNoSpoil.AttributeProxies;
 
 namespace Wiltoga.OfflineFoodNoSpoil;
@@ -10,17 +9,17 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 internal class ItemPerishService : IItemPerishService
 {
     private readonly IModLogger logger;
-    private readonly ITimeSkipService timeSkipService;
-    private readonly ICoreServerAPI server;
+    private readonly ITimeService timeSkipService;
+    private readonly IGameCalendar calendar;
 
     public ItemPerishService()
     {
         logger = Scope.Inject<IModLogger>();
-        timeSkipService = Scope.Inject<ITimeSkipService>();
-        server = Scope.Inject<ICoreServerAPI>();
+        timeSkipService = Scope.Inject<ITimeService>();
+        calendar = Scope.Inject<IGameCalendar>();
     }
 
-    public ModData? FreezeItem(IInventory inventory, ItemPerishEntry item)
+    public ModData? FreezeItem(ItemPerishEntry item)
     {
         logger.Debug($"Freeze item {item.Name}");
         if (item.TransitionState is not null)
@@ -28,7 +27,7 @@ internal class ItemPerishService : IItemPerishService
             logger.Debug($"Item has transition state");
             return new()
             {
-                DisconnectTotalHours = server.World.Calendar.TotalHours,
+                DisconnectTotalHours = calendar.TotalHours,
             };
         }
         else
@@ -38,7 +37,7 @@ internal class ItemPerishService : IItemPerishService
         }
     }
 
-    public void UnfreezeItem(IInventory inventory, ItemPerishEntry item, ModData? modData)
+    public void UnfreezeItem(ItemPerishEntry item, ModData? modData)
     {
         logger.Debug($"Unfreeze item {item.Name}");
         if (modData is null)

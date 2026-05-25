@@ -6,6 +6,6 @@ namespace Wiltoga.OfflineFoodNoSpoil.Tests.Substitutes
 {
     internal static class SubstituteInventory
     {
-        public static InventoryBase Create() => Substitute.ForPartsOf<InventoryBase>("testinventory", Guid.NewGuid().ToString(), Scope.Inject<ICoreServerAPI>());
+        public static InventoryBase Create() => Substitute.ForPartsOf<InventoryBase>("testinventory", Guid.NewGuid().ToString(), Scope.Inject<ICoreAPI>());
     }
 }

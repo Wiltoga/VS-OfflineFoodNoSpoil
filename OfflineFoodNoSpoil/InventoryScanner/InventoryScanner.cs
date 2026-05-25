@@ -52,7 +52,7 @@ internal class InventoryScanner : IInventoryScanner
                 {
                     using (logger.Indent())
                     {
-                        var modData = itemPerishService.FreezeItem(inventory, entry);
+                        var modData = itemPerishService.FreezeItem(entry);
 
                         if (modData is not null)
                         {
@@ -62,7 +62,7 @@ internal class InventoryScanner : IInventoryScanner
                 }
                 if (slotModData.Keys.Count > 0)
                 {
-                    modDataManager.SaveModData(inventory, scan.Slot, slotModData);
+                    modDataManager.SaveModData(scan.Slot, slotModData);
                 }
                 else
                 {
@@ -78,14 +78,14 @@ internal class InventoryScanner : IInventoryScanner
         {
             using (logger.Indent())
             {
-                var slotModData = modDataManager.TryGetModData(inventory, scan.Slot, scan.Entries);
+                var slotModData = modDataManager.TryGetModData(scan.Slot, scan.Entries);
 
                 foreach (var entry in scan.Entries)
                 {
                     ModData? modData = null;
                     slotModData?.TryGetValue(entry.Key, out modData);
 
-                    itemPerishService.UnfreezeItem(inventory, entry, modData);
+                    itemPerishService.UnfreezeItem(entry, modData);
                 }
             }
         }

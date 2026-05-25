@@ -1,6 +1,6 @@
 ﻿namespace Wiltoga.OfflineFoodNoSpoil;
 
-public interface ITimeSkipService
+public interface ITimeService
 {
     float GetSkippedTime(double reference);
 }

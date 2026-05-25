@@ -14,12 +14,12 @@ public class ModDataProxy(ITreeAttribute? attributes) : AttributeProxy(attribute
     readonly private ITreeAttribute? attributes = attributes;
     protected override string AttributeName => $"{OfflineFoodNoSpoil.Instance.Mod.Info.ModID}:transitionstate";
 
-    public void DeleteData()
+    public virtual void DeleteData()
     {
         attributes?.RemoveAttribute(AttributeName);
     }
 
-    public double? DisconnectTotalHours
+    public virtual double? DisconnectTotalHours
     {
         get => Tree?.TryGetDouble("disconnectTotalHours");
     }

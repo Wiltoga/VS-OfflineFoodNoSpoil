@@ -12,7 +12,7 @@ public class ContentsProxy(ITreeAttribute? attributes) : AttributeProxy(attribut
     /// <summary>
     /// The list of stacks in this attribute tree
     /// </summary>
-    public Dictionary<string, ItemStack> Stacks => Tree?
+    public virtual Dictionary<string, ItemStack> Stacks => Tree?
         .Where(pair => pair.Value is ItemstackAttribute { value: not null })
         .ToDictionary(
             pair => pair.Key,

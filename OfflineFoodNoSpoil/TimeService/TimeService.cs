@@ -1,17 +1,17 @@
 ﻿using System;
-using Vintagestory.API.Server;
+using Vintagestory.API.Common;
 
 namespace Wiltoga.OfflineFoodNoSpoil;
 
-internal class TimeSkipService : ITimeSkipService
+internal class TimeService : ITimeService
 {
-    private readonly ICoreServerAPI server;
+    private readonly IGameCalendar calendar;
     private readonly IModLogger logger;
     private readonly ISettingsService settingsService;
 
-    public TimeSkipService()
+    public TimeService()
     {
-        server = Scope.Inject<ICoreServerAPI>();
+        calendar = Scope.Inject<IGameCalendar>();
         logger = Scope.Inject<IModLogger>();
         settingsService = Scope.Inject<ISettingsService>();
     }
@@ -20,7 +20,7 @@ internal class TimeSkipService : ITimeSkipService
     {
         var settings = settingsService.Settings;
 
-        var elapsedHours = (float)(server.World.Calendar.TotalHours - hourReference);
+        var elapsedHours = (float)(calendar.TotalHours - hourReference);
         logger.Debug($"Computed elapsed minutes : {elapsedHours * 60:0.##}");
         var skippedHours = elapsedHours * (1 - settings.FoodSpoilMultiplier);
         logger.Debug($"Skipped minutes after applying the {settings.FoodSpoilMultiplier} multiplier : {skippedHours * 60:0.##}");

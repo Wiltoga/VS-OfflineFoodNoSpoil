@@ -54,8 +54,8 @@ public class InventoryScannerShould : ScopedTest
 
         scanner.FreezeInventory(inventory);
 
-        itemPerishService.Received(1).FreezeItem(inventory, entries[0]);
-        itemPerishService.Received(1).FreezeItem(inventory, entries[1]);
+        itemPerishService.Received(1).FreezeItem(entries[0]);
+        itemPerishService.Received(1).FreezeItem(entries[1]);
     }
 
     [Fact]
@@ -94,8 +94,8 @@ public class InventoryScannerShould : ScopedTest
 
         scanner.UnfreezeInventory(inventory);
 
-        itemPerishService.Received(1).UnfreezeItem(inventory, entries[0], null);
-        itemPerishService.Received(1).UnfreezeItem(inventory, entries[1], null);
+        itemPerishService.Received(1).UnfreezeItem(entries[0], null);
+        itemPerishService.Received(1).UnfreezeItem(entries[1], null);
     }
 
     [Fact]
@@ -134,15 +134,15 @@ public class InventoryScannerShould : ScopedTest
         ]);
         ModData modData1;
         ModData modData2;
-        itemPerishService.FreezeItem(inventory, entry1).Returns(modData1 = new()
+        itemPerishService.FreezeItem(entry1).Returns(modData1 = new()
         {
             DisconnectTotalHours = 10,
         });
-        itemPerishService.FreezeItem(inventory, entry2).Returns(modData2 = new()
+        itemPerishService.FreezeItem(entry2).Returns(modData2 = new()
         {
             DisconnectTotalHours = 20,
         });
-        modDataManager.When(manager => manager.SaveModData(inventory, slot, Arg.Any<Dictionary<string, ModData>>())).Do(call =>
+        modDataManager.When(manager => manager.SaveModData(slot, Arg.Any<Dictionary<string, ModData>>())).Do(call =>
         {
             var data = call.Arg<Dictionary<string, ModData>>();
 
@@ -155,7 +155,7 @@ public class InventoryScannerShould : ScopedTest
 
         scanner.FreezeInventory(inventory);
 
-        modDataManager.Received(1).SaveModData(inventory, slot, Arg.Any<Dictionary<string, ModData>>());
+        modDataManager.Received(1).SaveModData(slot, Arg.Any<Dictionary<string, ModData>>());
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class InventoryScannerShould : ScopedTest
         {
             DisconnectTotalHours = 20,
         };
-        modDataManager.TryGetModData(inventory, slot, entries).Returns(new Dictionary<string, ModData>
+        modDataManager.TryGetModData(slot, entries).Returns(new Dictionary<string, ModData>
         {
             ["entryKey1"] = modData1,
             ["entryKey2"] = modData2,
@@ -207,9 +207,9 @@ public class InventoryScannerShould : ScopedTest
 
         scanner.UnfreezeInventory(inventory);
 
-        modDataManager.Received(1).TryGetModData(inventory, slot, entries);
-        itemPerishService.Received(1).UnfreezeItem(inventory, entries[0], modData1);
-        itemPerishService.Received(1).UnfreezeItem(inventory, entries[1], modData2);
+        modDataManager.Received(1).TryGetModData(slot, entries);
+        itemPerishService.Received(1).UnfreezeItem(entries[0], modData1);
+        itemPerishService.Received(1).UnfreezeItem(entries[1], modData2);
     }
 
     [Fact]

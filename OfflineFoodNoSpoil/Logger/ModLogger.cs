@@ -1,13 +1,12 @@
 ﻿using System;
 using Vintagestory.API.Common;
-using Vintagestory.API.Server;
 
 namespace Wiltoga.OfflineFoodNoSpoil;
 
 internal class ModLogger : IModLogger
 {
     private readonly ISettingsService settingsService;
-    private readonly ICoreServerAPI server;
+    private readonly ICoreAPI api;
     private readonly Mod mod;
     private int currentIndent = 0;
 
@@ -16,7 +15,7 @@ internal class ModLogger : IModLogger
     public ModLogger()
     {
         settingsService = Scope.Inject<ISettingsService>();
-        server = Scope.Inject<ICoreServerAPI>();
+        api = Scope.Inject<ICoreAPI>();
         mod = Scope.Inject<Mod>();
     }
 
@@ -26,23 +25,28 @@ internal class ModLogger : IModLogger
     {
         if (settingsService.Settings.UseLogs)
         {
-            server.Logger.Debug(Prefix + ComputeIndent(currentIndent) + message);
+            api.Logger.Debug(Prefix + ComputeIndent(currentIndent) + message);
         }
     }
 
     public void Info(string message)
     {
-        server.Logger.Notification(Prefix + ComputeIndent(currentIndent) + message);
+        api.Logger.Notification(Prefix + ComputeIndent(currentIndent) + message);
     }
 
     public void Warning(string message)
     {
-        server.Logger.Warning(Prefix + ComputeIndent(currentIndent) + message);
+        api.Logger.Warning(Prefix + ComputeIndent(currentIndent) + message);
+    }
+
+    public void Error(string message)
+    {
+        api.Logger.Error(Prefix + ComputeIndent(currentIndent) + message);
     }
 
     public void Error(Exception exception)
     {
-        server.Logger.Error($"{Prefix}{Environment.NewLine}Version[{mod.Info.Version}] : {exception}");
+        api.Logger.Error($"{Prefix}{Environment.NewLine}Version[{mod.Info.Version}] : {exception}");
     }
 
     public IDisposable Indent()

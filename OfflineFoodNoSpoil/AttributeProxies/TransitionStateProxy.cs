@@ -7,7 +7,7 @@ public class TransitionStateProxy(ITreeAttribute? attributes) : AttributeProxy(a
 {
     protected override string AttributeName => "transitionstate";
 
-    public double? LastUpdatedTotalHours
+    public virtual double? LastUpdatedTotalHours
     {
         get => Tree?.TryGetDouble("lastUpdatedTotalHours");
         set
@@ -26,7 +26,7 @@ public class TransitionStateProxy(ITreeAttribute? attributes) : AttributeProxy(a
         }
     }
 
-    public double? CreatedTotalHours
+    public virtual double? CreatedTotalHours
     {
         get => Tree?.TryGetDouble("createdTotalHours");
         set
@@ -45,7 +45,7 @@ public class TransitionStateProxy(ITreeAttribute? attributes) : AttributeProxy(a
         }
     }
 
-    public float[]? TransitionedHours
+    public virtual float[]? TransitionedHours
     {
         get => (Tree?["transitionedHours"] as FloatArrayAttribute)?.value;
         set
@@ -67,7 +67,7 @@ public class TransitionStateProxy(ITreeAttribute? attributes) : AttributeProxy(a
     /// <summary>
     /// Total freshness duration of the stack
     /// </summary>
-    public float[]? TransitionHours
+    public virtual float[]? TransitionHours
     {
         get => (Tree?["transitionHours"] as FloatArrayAttribute)?.value;
         set
@@ -89,7 +89,7 @@ public class TransitionStateProxy(ITreeAttribute? attributes) : AttributeProxy(a
     /// <summary>
     /// Remaining time of available freshness
     /// </summary>
-    public float[]? FreshHours
+    public virtual float[]? FreshHours
     {
         get => (Tree?["freshHours"] as FloatArrayAttribute)?.value;
         set

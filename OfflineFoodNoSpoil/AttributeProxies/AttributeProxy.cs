@@ -8,5 +8,5 @@ public abstract class AttributeProxy(ITreeAttribute? attributes)
 
     protected ITreeAttribute? Tree => attributes?.GetTreeAttribute(AttributeName);
 
-    public bool Exists => Tree is not null;
+    public virtual bool Exists => Tree is not null;
 }

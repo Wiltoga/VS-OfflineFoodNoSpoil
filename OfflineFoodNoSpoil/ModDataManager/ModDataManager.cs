@@ -9,9 +9,9 @@ namespace Wiltoga.OfflineFoodNoSpoil;
 
 internal sealed class ModDataManager : IModDataManager, IDisposable
 {
-    private readonly ICoreServerAPI server;
+    private readonly ISaveGame saveGame;
     private readonly IModLogger logger;
-    private const string StorageKey = "Wiltoga.OfflineFoodNoSpoil.PlayerData";
+    internal const string StorageKey = "Wiltoga.OfflineFoodNoSpoil.PlayerData";
     private Dictionary<string, Dictionary<string, ModData>>? globalModDataCache;
     private bool requiresSave = false;
 
@@ -22,8 +22,18 @@ internal sealed class ModDataManager : IModDataManager, IDisposable
             if (globalModDataCache is null)
             {
                 logger.Debug("No data loaded, fetching save file");
-                var json = server.WorldManager.SaveGame.GetData<string>(StorageKey);
-                globalModDataCache = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, ModData>>?>(json ?? "null");
+                var json = saveGame.GetData<string>(StorageKey);
+
+                try
+                {
+                    globalModDataCache = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, ModData>>?>(json ?? "null");
+                }
+                catch( JsonException e)
+                {
+                    logger.Error("Failed to parse save game data");
+                    logger.Error(e);
+                }
+
                 if (globalModDataCache is null)
                 {
                     logger.Debug("No data found");
@@ -44,13 +54,13 @@ internal sealed class ModDataManager : IModDataManager, IDisposable
 
     public ModDataManager()
     {
-        server = Scope.Inject<ICoreServerAPI>();
+        saveGame = Scope.Inject<ISaveGame>();
         logger = Scope.Inject<IModLogger>();
     }
 
-    public Dictionary<string, ModData>? TryGetModData(IInventory inventory, ItemSlot slot, IEnumerable<ItemPerishEntry> entries)
+    public Dictionary<string, ModData>? TryGetModData(ItemSlot slot, IEnumerable<ItemPerishEntry> entries)
     {
-        var saveGameData = TryGetModDataFromSaveData(inventory, slot);
+        var saveGameData = TryGetModDataFromSaveData(slot);
         
         if (saveGameData is not null)
         {
@@ -62,22 +72,23 @@ internal sealed class ModDataManager : IModDataManager, IDisposable
         return legacyData;
     }
 
-    public void SaveModData(IInventory inventory, ItemSlot slot, Dictionary<string, ModData> data)
+    public void SaveModData(ItemSlot slot, Dictionary<string, ModData> data)
     {
-        string uniqueId = $"{inventory.InventoryID}[{inventory.GetSlotId(slot)}]";
+        string uniqueId = $"{slot.Inventory.InventoryID}[{slot.Inventory.GetSlotId(slot)}]";
         logger.Debug($"Saving data entry with id {uniqueId}");
 
         GlobalModData[uniqueId] = data;
         requiresSave = true;
     }
 
-    private Dictionary<string, ModData>? TryGetModDataFromSaveData(IInventory inventory, ItemSlot slot)
+    private Dictionary<string, ModData>? TryGetModDataFromSaveData(ItemSlot slot)
     {
-        string uniqueId = $"{inventory.InventoryID}[{inventory.GetSlotId(slot)}]";
+        string uniqueId = $"{slot.Inventory.InventoryID}[{slot.Inventory.GetSlotId(slot)}]";
         logger.Debug($"Retrieving data entry with id {uniqueId}");
 
         GlobalModData.TryGetValue(uniqueId, out var data);
         GlobalModData.Remove(uniqueId);
+        requiresSave = true;
 
         return data;
     }
@@ -121,7 +132,7 @@ internal sealed class ModDataManager : IModDataManager, IDisposable
             if (requiresSave)
             {
                 logger.Debug($"Saving cache to save file");
-                server.WorldManager.SaveGame.StoreData(StorageKey, JsonSerializer.Serialize(globalModDataCache));
+                saveGame.StoreData(StorageKey, JsonSerializer.Serialize(globalModDataCache));
             }
             else
             {

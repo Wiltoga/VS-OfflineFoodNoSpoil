@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Wiltoga.OfflineFoodNoSpoil;
 
-public sealed class Scope : IScope
+public sealed class Scope : IDisposable
 {
     private readonly Dictionary<Type, object?> cache = [];
 
-    public static IScope Current { get; private set; } = default!;
+    public static ThreadLocal<Scope> current = new();
+    public static Scope Current { get => current.Value!; private set => current.Value = value; }
     public static T Inject<T>() where T : class => Current.Get<T>();
 
     private Scope()
@@ -16,7 +18,7 @@ public sealed class Scope : IScope
         Current = this;
     }
     
-    public static IScope New() => new Scope();
+    public static Scope New() => new Scope();
 
     public void Dispose()
     {
