@@ -7,16 +7,16 @@ internal class ModLogger : IModLogger
 {
     private readonly ISettingsService settingsService;
     private readonly ICoreAPI api;
-    private readonly Mod mod;
+    private readonly ModInfo modInfo;
     private int currentIndent = 0;
 
-    private string Prefix => $"{mod.Info.ModID} : ";
+    private string Prefix => $"{modInfo.ModID} : ";
     
     public ModLogger()
     {
         settingsService = Scope.Inject<ISettingsService>();
         api = Scope.Inject<ICoreAPI>();
-        mod = Scope.Inject<Mod>();
+        modInfo = Scope.Inject<ModInfo>();
     }
 
     private static string ComputeIndent(int value) => new string(' ', value * 2);
@@ -46,7 +46,7 @@ internal class ModLogger : IModLogger
 
     public void Error(Exception exception)
     {
-        api.Logger.Error($"{Prefix}{Environment.NewLine}Version[{mod.Info.Version}] : {exception}");
+        api.Logger.Error($"{Prefix}{Environment.NewLine}Version[{modInfo.Version}] : {exception}");
     }
 
     public IDisposable Indent()

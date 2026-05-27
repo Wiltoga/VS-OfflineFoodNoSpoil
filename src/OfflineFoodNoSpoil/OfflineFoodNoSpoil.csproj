@@ -1,25 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
     <Nullable>enable</Nullable>
-	  <Author>Wiltoga</Author>
-	  <AssemblyName>$(Author).$(MSBuildProjectName)</AssemblyName>
-	  <RootNamespace>$(AssemblyName.Replace(" ", "_"))</RootNamespace>
-	  <Version>2.0.1-dev.2</Version>
   </PropertyGroup>
-
-	<ItemGroup>
-		<InternalsVisibleTo Include="$(Author).$(MSBuildProjectName).UnitTests" />
-	</ItemGroup>
 	
   <ItemGroup>
-    <Reference Include="VintagestoryAPI">
-      <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
+	<InternalsVisibleTo Include="$(Author).$(MSBuildProjectName).UnitTests" />
+	<InternalsVisibleTo Include="$(Author).$(MSBuildProjectName).IntegrationTests" />
   </ItemGroup>
 
 <ItemGroup>

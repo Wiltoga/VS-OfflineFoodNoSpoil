@@ -1,5 +1,5 @@
 ﻿using NSubstitute;
-using Wiltoga.OfflineFoodNoSpoil.Tests.Substitutes;
+using Wiltoga.OfflineFoodNoSpoil.UnitTests.Substitutes;
 
 namespace Wiltoga.OfflineFoodNoSpoil.UnitTests;
 

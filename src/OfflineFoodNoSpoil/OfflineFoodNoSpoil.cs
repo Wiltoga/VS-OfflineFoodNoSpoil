@@ -26,8 +26,9 @@ public class OfflineFoodNoSpoil : ModSystem
             // loading to trigger the settings file creation if it doesn't exist yet
             _ = scope.Get<ISettingsService>().Settings;
             var logger = scope.Get<IModLogger>();
+            var infos = scope.Get<ModInfo>();
 
-            logger.Info($"Starting {Mod.Info.Name}");
+            logger.Info($"Starting {infos.Name}");
         }
 
         Server.Event.PlayerJoin += Event_PlayerJoin;

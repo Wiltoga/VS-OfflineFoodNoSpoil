@@ -1,5 +1,12 @@
 <Solution>
+  <Folder Name="/Source/">
+    <Project Path="src/OfflineFoodNoSpoil/OfflineFoodNoSpoil.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/OfflineFoodNoSpoil.UnitTests/OfflineFoodNoSpoil.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/Éléments de solution/">
+    <File Path="Directory.Build.props" />
+  </Folder>
   <Project Path="CakeBuild/CakeBuild.csproj" />
-  <Project Path="OfflineFoodNoSpoil.Tests/OfflineFoodNoSpoil.Tests.csproj" />
-  <Project Path="OfflineFoodNoSpoil/OfflineFoodNoSpoil.csproj" />
 </Solution>

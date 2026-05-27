@@ -27,6 +27,8 @@ namespace CakeBuild
     public class BuildContext : FrostingContext
     {
         public const string ProjectName = "OfflineFoodNoSpoil";
+        public const string ProjectDir = $"../src/{ProjectName}";
+        public const string ProjectPath = $"{ProjectName}/{ProjectName}.csproj";
         public string BuildConfiguration { get; }
         public string Version { get; }
         public string Name { get; }
@@ -37,7 +39,7 @@ namespace CakeBuild
         {
             BuildConfiguration = context.Argument("configuration", "Release");
             SkipJsonValidation = context.Argument("skipJsonValidation", false);
-            var modInfo = context.DeserializeJsonFromFile<ModInfo>($"../{ProjectName}/modinfo.json");
+            var modInfo = context.DeserializeJsonFromFile<ModInfo>($"{ProjectDir}/modinfo.json");
             Version = modInfo.Version;
             Name = modInfo.ModID;
         }
@@ -52,7 +54,7 @@ namespace CakeBuild
             {
                 return;
             }
-            var jsonFiles = context.GetFiles($"../{BuildContext.ProjectName}/assets/**/*.json");
+            var jsonFiles = context.GetFiles($"{BuildContext.ProjectDir}/assets/**/*.json");
             foreach (var file in jsonFiles)
             {
                 try
@@ -74,14 +76,14 @@ namespace CakeBuild
     {
         public override void Run(BuildContext context)
         {
-            context.DotNetClean($"../{BuildContext.ProjectName}/{BuildContext.ProjectName}.csproj",
+            context.DotNetClean(BuildContext.ProjectPath,
                 new DotNetCleanSettings
                 {
                     Configuration = context.BuildConfiguration
                 });
 
 
-            context.DotNetPublish($"../{BuildContext.ProjectName}/{BuildContext.ProjectName}.csproj",
+            context.DotNetPublish(BuildContext.ProjectPath,
                 new DotNetPublishSettings
                 {
                     Configuration = context.BuildConfiguration
@@ -98,15 +100,15 @@ namespace CakeBuild
             context.EnsureDirectoryExists("../Releases");
             context.CleanDirectory("../Releases");
             context.EnsureDirectoryExists($"../Releases/{context.Name}");
-            context.CopyFiles($"../{BuildContext.ProjectName}/bin/{context.BuildConfiguration}/Mods/mod/publish/*", $"../Releases/{context.Name}");
-            if (context.DirectoryExists($"../{BuildContext.ProjectName}/assets"))
+            context.CopyFiles($"{BuildContext.ProjectDir}/bin/{context.BuildConfiguration}/Mods/mod/publish/*", $"../Releases/{context.Name}");
+            if (context.DirectoryExists($"{BuildContext.ProjectDir}/assets"))
             {
-                context.CopyDirectory($"../{BuildContext.ProjectName}/assets", $"../Releases/{context.Name}/assets");
+                context.CopyDirectory($"{BuildContext.ProjectDir}/assets", $"../Releases/{context.Name}/assets");
             }
-            context.CopyFile($"../{BuildContext.ProjectName}/modinfo.json", $"../Releases/{context.Name}/modinfo.json");
-            if (context.FileExists($"../{BuildContext.ProjectName}/modicon.png"))
+            context.CopyFile($"{BuildContext.ProjectDir}/modinfo.json", $"../Releases/{context.Name}/modinfo.json");
+            if (context.FileExists($"{BuildContext.ProjectDir}/modicon.png"))
             {
-                context.CopyFile($"../{BuildContext.ProjectName}/modicon.png", $"../Releases/{context.Name}/modicon.png");
+                context.CopyFile($"{BuildContext.ProjectDir}/modicon.png", $"../Releases/{context.Name}/modicon.png");
             }
             context.Zip($"../Releases/{context.Name}", $"../Releases/{context.Name}_{context.Version}.zip");
         }
