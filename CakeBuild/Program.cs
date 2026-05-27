@@ -28,7 +28,7 @@ namespace CakeBuild
     {
         public const string ProjectName = "OfflineFoodNoSpoil";
         public const string ProjectDir = $"../src/{ProjectName}";
-        public const string ProjectPath = $"{ProjectName}/{ProjectName}.csproj";
+        public const string ProjectPath = $"{ProjectDir}/{ProjectName}.csproj";
         public string BuildConfiguration { get; }
         public string Version { get; }
         public string Name { get; }
