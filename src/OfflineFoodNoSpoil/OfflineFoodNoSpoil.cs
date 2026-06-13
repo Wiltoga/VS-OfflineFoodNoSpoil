@@ -33,6 +33,10 @@ public class OfflineFoodNoSpoil : ModSystem
 
         Server.Event.PlayerJoin += Event_PlayerJoin;
         Server.Event.PlayerDisconnect += Event_PlayerDisconnect;
+
+#if DEBUG
+        GetFoodCommand.RegisterCommand(api);
+#endif
     }
 
     private void Event_PlayerJoin(IServerPlayer byPlayer)
