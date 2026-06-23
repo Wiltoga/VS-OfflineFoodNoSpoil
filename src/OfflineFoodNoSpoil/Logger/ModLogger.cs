@@ -1,15 +1,26 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Text;
 using Vintagestory.API.Common;
 
 namespace Wiltoga.OfflineFoodNoSpoil;
 
-internal class ModLogger : IModLogger
+internal class ModLogger : IModLogger, IServerLifetime
 {
     private readonly ISettingsService settingsService;
     private readonly ICoreAPI api;
     private readonly ModInfo modInfo;
     private int currentIndent = 0;
 
+    /// <summary>
+    /// List of crash dumps created in order to delete them on server stop
+    /// </summary>
+    private static readonly ConcurrentBag<string> crashDumps = [];
+
+    /// <summary>
+    /// Prefix of every logged message
+    /// </summary>
     private string Prefix => $"{modInfo.ModID} : ";
     
     public ModLogger()
@@ -49,9 +60,48 @@ internal class ModLogger : IModLogger
         api.Logger.Error($"{Prefix}{Environment.NewLine}Version[{modInfo.Version}] : {exception}");
     }
 
+    public string? CreateCrashDump(string text)
+    {
+        if (settingsService.Settings.CreateCrashDumps)
+        {
+            try
+            {
+                var filename = Path.GetTempFileName();
+                using (var writer = new StreamWriter(filename, false, Encoding.UTF8))
+                {
+                    writer.WriteLine($"Version[{modInfo.Version}]");
+                    writer.Write(text);
+                }
+                crashDumps.Add(filename);
+                return filename;
+            }
+            catch(Exception ex)
+            {
+                Error(ex);
+                return null;
+            }
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     public IDisposable Indent()
     {
         return new IndentScope(this);
+    }
+
+    public void ServerStopped()
+    {
+        foreach (var crashDump in crashDumps)
+        {
+            try
+            {
+                File.Delete(crashDump);
+            }
+            catch { }
+        }
     }
 
     private sealed class IndentScope : IDisposable

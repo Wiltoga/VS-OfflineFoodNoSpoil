@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Common;
+﻿using System;
+using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
 namespace Wiltoga.OfflineFoodNoSpoil;
@@ -42,23 +43,46 @@ public class OfflineFoodNoSpoil : ModSystem
     private void Event_PlayerJoin(IServerPlayer byPlayer)
     {
         using var scope = Scope.New();
-        var handler = scope.Get<IPlayerEventsHandler>();
+        var handlers = scope.GetAll<IPlayerEventsHandler>();
 
-        handler.PlayerJoined(byPlayer);
+        foreach (var handler in handlers)
+        {
+            handler.PlayerJoined(byPlayer);
+        }
     }
 
     private void Event_PlayerDisconnect(IServerPlayer byPlayer)
     {
         using var scope = Scope.New();
-        var handler = scope.Get<IPlayerEventsHandler>();
+        var handlers = scope.GetAll<IPlayerEventsHandler>();
 
-        handler.PlayerDisconnected(byPlayer);
+        foreach(var handler in handlers)
+        {
+            handler.PlayerDisconnected(byPlayer);
+        }
     }
 
     public override void Dispose()
     {
-        base.Dispose();
+        using (var scope = Scope.New())
+        {
+            var lifetimeServices = scope.GetAll<IServerLifetime>();
+
+            foreach (var lifetimeService in lifetimeServices)
+            {
+                try
+                {
+                    lifetimeService.ServerStopped();
+                }
+                catch(Exception e)
+                {
+                    var logger = scope.Get<IModLogger>();
+                    logger.Error(e);
+                }
+            }
+        }
         Server.Event.PlayerJoin -= Event_PlayerJoin;
         Server.Event.PlayerDisconnect -= Event_PlayerDisconnect;
+        base.Dispose();
     }
 }

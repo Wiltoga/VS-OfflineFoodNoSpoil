@@ -2,11 +2,29 @@
 
 namespace Wiltoga.OfflineFoodNoSpoil;
 
+/// <summary>
+/// Service to extract perishable data from a slot and snap/restore it
+/// </summary>
 public interface IItemPerishService
 {
-    ModData? FreezeItem(ItemPerishEntry item);
+    /// <summary>
+    /// Creates a snapshot of the perishable entry, used to restore it later
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns></returns>
+    ModData? SnapItem(ItemPerishEntry item);
 
+    /// <summary>
+    /// Extracts all perishable entries of a slot, if any
+    /// </summary>
+    /// <param name="slot"></param>
+    /// <returns></returns>
     ItemPerishEntry[] GetItemPerishEntries(ItemSlot slot);
 
-    void UnfreezeItem(ItemPerishEntry item, ModData? modData);
+    /// <summary>
+    /// Restores the given entry to a previously snapped state
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="modData"></param>
+    void RestoreItem(ItemPerishEntry item, ModData? modData);
 }

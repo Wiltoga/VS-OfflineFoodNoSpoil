@@ -11,10 +11,24 @@ internal sealed class ModDataManager : IModDataManager, IDisposable
 {
     private readonly ISaveGame saveGame;
     private readonly IModLogger logger;
+    /// <summary>
+    /// Key of the global mod data in the savefile
+    /// </summary>
     internal const string StorageKey = "Wiltoga.OfflineFoodNoSpoil.PlayerData";
+
+    /// <summary>
+    /// Format of the key of one inventory slot in the global data
+    /// </summary>
+    /// <remarks>
+    /// First parameter is the inventory id, second is the id of the slot in the inventory
+    /// </remarks>
+    private const string SlotKeyFormat = "{0}[{1}]";
     private Dictionary<string, Dictionary<string, ModData>>? globalModDataCache;
     private bool requiresSave = false;
 
+    /// <summary>
+    /// Cached data loaded from the savefile, to only load once per scope
+    /// </summary>
     private Dictionary<string, Dictionary<string, ModData>> GlobalModData
     {
         get
@@ -74,7 +88,7 @@ internal sealed class ModDataManager : IModDataManager, IDisposable
 
     public void SaveModData(ItemSlot slot, Dictionary<string, ModData> data)
     {
-        string uniqueId = $"{slot.Inventory.InventoryID}[{slot.Inventory.GetSlotId(slot)}]";
+        string uniqueId = string.Format(SlotKeyFormat, slot.Inventory.InventoryID, slot.Inventory.GetSlotId(slot));
         logger.Debug($"Saving data entry with id {uniqueId}");
 
         GlobalModData[uniqueId] = data;
@@ -83,7 +97,7 @@ internal sealed class ModDataManager : IModDataManager, IDisposable
 
     private Dictionary<string, ModData>? TryGetModDataFromSaveData(ItemSlot slot)
     {
-        string uniqueId = $"{slot.Inventory.InventoryID}[{slot.Inventory.GetSlotId(slot)}]";
+        string uniqueId = string.Format(SlotKeyFormat, slot.Inventory.InventoryID, slot.Inventory.GetSlotId(slot));
         logger.Debug($"Retrieving data entry with id {uniqueId}");
 
         GlobalModData.TryGetValue(uniqueId, out var data);

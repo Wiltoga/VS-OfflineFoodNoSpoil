@@ -3,17 +3,20 @@ using Vintagestory.API.Server;
 
 namespace Wiltoga.OfflineFoodNoSpoil;
 
+/// <summary>
+/// Service used to start the snap and restore processes on player disconnect and join
+/// </summary>
 internal class PlayerEventsHandler : IPlayerEventsHandler
 {
     private readonly IModLogger logger;
-    private readonly IInventoryScanner inventoryScanner;
+    private readonly IInventorySnapper inventoryScanner;
     private readonly ISettingsService settingsService;
 
     public PlayerEventsHandler()
     {
         logger = Scope.Inject<IModLogger>();
         settingsService = Scope.Inject<ISettingsService>();
-        inventoryScanner = Scope.Inject<IInventoryScanner>();
+        inventoryScanner = Scope.Inject<IInventorySnapper>();
     }
 
     public void PlayerJoined(IServerPlayer byPlayer)
@@ -34,12 +37,12 @@ internal class PlayerEventsHandler : IPlayerEventsHandler
 
                     foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
                     {
-                        logger.Debug($"Unfreeze inventory {inventory?.ClassName}");
+                        logger.Debug($"Restore inventory {inventory?.ClassName}");
                         if (inventory is not null && !settingsService.Settings.InventoriesBlacklist.Contains(inventory.ClassName, StringComparer.OrdinalIgnoreCase))
                         {
                             using (logger.Indent())
                             {
-                                inventoryScanner.UnfreezeInventory(inventory);
+                                inventoryScanner.RestoreInventory(inventory);
                             }
                         }
                         else
@@ -76,12 +79,12 @@ internal class PlayerEventsHandler : IPlayerEventsHandler
                 {
                     foreach (var inventory in byPlayer.InventoryManager.Inventories.Values)
                     {
-                        logger.Debug($"Freeze inventory {inventory?.ClassName}");
+                        logger.Debug($"Save inventory {inventory?.ClassName}");
                         if (inventory is not null && !settingsService.Settings.InventoriesBlacklist.Contains(inventory.ClassName, StringComparer.OrdinalIgnoreCase))
                         {
                             using (logger.Indent())
                             {
-                                inventoryScanner.FreezeInventory(inventory);
+                                inventoryScanner.SnapInventory(inventory);
                             }
                         }
                         else

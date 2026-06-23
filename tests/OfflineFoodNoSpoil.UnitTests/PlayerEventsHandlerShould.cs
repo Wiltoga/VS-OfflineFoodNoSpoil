@@ -16,7 +16,7 @@ public class PlayerEventsHandlerShould : ScopedTest
     [Fact]
     public void NotRunWhenModDisabled()
     {
-        var inventoryScanner = Scope.Inject<IInventoryScanner>();
+        var inventoryScanner = Scope.Inject<IInventorySnapper>();
         Scope.Inject<ISettingsService>().Settings.Returns(Settings.Default with
         {
             EnableMod = false,
@@ -26,14 +26,14 @@ public class PlayerEventsHandlerShould : ScopedTest
         handler.PlayerJoined(player);
         handler.PlayerDisconnected(player);
 
-        inventoryScanner.DidNotReceiveWithAnyArgs().FreezeInventory(default!);
-        inventoryScanner.DidNotReceiveWithAnyArgs().UnfreezeInventory(default!);
+        inventoryScanner.DidNotReceiveWithAnyArgs().SnapInventory(default!);
+        inventoryScanner.DidNotReceiveWithAnyArgs().RestoreInventory(default!);
     }
 
     [Fact]
-    public void UnfreezeInventoryOnJoin()
+    public void RestoreInventoryOnJoin()
     {
-        var inventoryScanner = Scope.Inject<IInventoryScanner>();
+        var inventoryScanner = Scope.Inject<IInventorySnapper>();
         var player = Substitute.For<IServerPlayer>();
         player.InventoryManager.Returns(Substitute.For<IPlayerInventoryManager>());
         player.InventoryManager.Inventories.Returns(new Dictionary<string, IInventory>
@@ -44,13 +44,13 @@ public class PlayerEventsHandlerShould : ScopedTest
 
         handler.PlayerJoined(player);
 
-        inventoryScanner.Received(1).UnfreezeInventory(inventory);
+        inventoryScanner.Received(1).RestoreInventory(inventory);
     }
 
     [Fact]
-    public void FreezeInventoryOnDisconnect()
+    public void SnapInventoryOnDisconnect()
     {
-        var inventoryScanner = Scope.Inject<IInventoryScanner>();
+        var inventoryScanner = Scope.Inject<IInventorySnapper>();
         var player = Substitute.For<IServerPlayer>();
         player.InventoryManager.Returns(Substitute.For<IPlayerInventoryManager>());
         player.InventoryManager.Inventories.Returns(new Dictionary<string, IInventory>
@@ -61,17 +61,17 @@ public class PlayerEventsHandlerShould : ScopedTest
 
         handler.PlayerDisconnected(player);
 
-        inventoryScanner.Received(1).FreezeInventory(inventory);
+        inventoryScanner.Received(1).SnapInventory(inventory);
     }
 
     [Fact]
-    public void NotUnfreezeBlacklistedInventoryOnJoin()
+    public void NotRestoreBlacklistedInventoryOnJoin()
     {
         Scope.Inject<ISettingsService>().Settings.Returns(Settings.Default with
         {
             InventoriesBlacklist = ["forbidden"],
         });
-        var inventoryScanner = Scope.Inject<IInventoryScanner>();
+        var inventoryScanner = Scope.Inject<IInventorySnapper>();
         var player = Substitute.For<IServerPlayer>();
         player.InventoryManager.Returns(Substitute.For<IPlayerInventoryManager>());
         player.InventoryManager.Inventories.Returns(new Dictionary<string, IInventory>
@@ -83,17 +83,17 @@ public class PlayerEventsHandlerShould : ScopedTest
 
         handler.PlayerJoined(player);
 
-        inventoryScanner.DidNotReceive().UnfreezeInventory(inventory);
+        inventoryScanner.DidNotReceive().RestoreInventory(inventory);
     }
 
     [Fact]
-    public void NotFreezeBlacklistedInventoryOnDisconnect()
+    public void NotSnapBlacklistedInventoryOnDisconnect()
     {
         Scope.Inject<ISettingsService>().Settings.Returns(Settings.Default with
         {
             InventoriesBlacklist = ["forbidden"],
         });
-        var inventoryScanner = Scope.Inject<IInventoryScanner>();
+        var inventoryScanner = Scope.Inject<IInventorySnapper>();
         var player = Substitute.For<IServerPlayer>();
         player.InventoryManager.Returns(Substitute.For<IPlayerInventoryManager>());
         player.InventoryManager.Inventories.Returns(new Dictionary<string, IInventory>
@@ -105,6 +105,6 @@ public class PlayerEventsHandlerShould : ScopedTest
 
         handler.PlayerDisconnected(player);
 
-        inventoryScanner.DidNotReceive().FreezeInventory(inventory);
+        inventoryScanner.DidNotReceive().SnapInventory(inventory);
     }
 }

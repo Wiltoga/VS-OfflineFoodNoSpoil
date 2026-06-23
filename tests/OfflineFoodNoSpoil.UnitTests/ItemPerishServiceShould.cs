@@ -21,7 +21,7 @@ public class ItemPerishServiceShould : ScopedTest
     }
 
     [Fact]
-    public void FreezeItemWithTransitionState()
+    public void SnapItemWithTransitionState()
     {
         ItemPerishEntry entry = new()
         {
@@ -33,7 +33,7 @@ public class ItemPerishServiceShould : ScopedTest
         };
         calendar.TotalHours.Returns(4.5);
 
-        var saveData = service.FreezeItem(entry);
+        var saveData = service.SnapItem(entry);
 
         saveData.Should()
             .NotBeNull()
@@ -42,7 +42,7 @@ public class ItemPerishServiceShould : ScopedTest
     }
 
     [Fact]
-    public void UnfreezeItemWithModData()
+    public void RestoreItemWithModData()
     {
         ItemPerishEntry entry = new()
         {
@@ -78,7 +78,7 @@ public class ItemPerishServiceShould : ScopedTest
                 );
         });
 
-        service.UnfreezeItem(entry, modData);
+        service.RestoreItem(entry, modData);
 
         entry.TransitionState.Should().Satisfy<TransitionStateProxy>(proxy =>
         {
@@ -88,7 +88,7 @@ public class ItemPerishServiceShould : ScopedTest
     }
 
     [Fact]
-    public void NotFreezeItemWithoutTransitionState()
+    public void NotSnapItemWithoutTransitionState()
     {
         ItemPerishEntry entry = new()
         {
@@ -99,7 +99,7 @@ public class ItemPerishServiceShould : ScopedTest
             OldModData = Substitute.For<ModDataProxy>([null]),
         };
 
-        var saveData = service.FreezeItem(entry);
+        var saveData = service.SnapItem(entry);
 
         saveData.Should()
             .BeNull();

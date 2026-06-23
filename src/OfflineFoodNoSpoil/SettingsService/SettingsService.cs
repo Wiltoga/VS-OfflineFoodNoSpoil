@@ -10,7 +10,11 @@ internal class SettingsService : ISettingsService
     private readonly ICoreServerAPI server;
     private readonly ModInfo modInfo;
     private readonly Lazy<Settings> settings;
+    public Settings Settings => settings.Value;
     
+    /// <summary>
+    /// Name of the settings file
+    /// </summary>
     internal string SettingsFile => $"{modInfo.ModID}.json";
 
     public SettingsService()
@@ -24,24 +28,31 @@ internal class SettingsService : ISettingsService
                 var settings = server.LoadModConfig<Settings>(SettingsFile);
                 if (settings is null)
                 {
-                    server.StoreModConfig(Settings.Default, SettingsFile);
-                    return Settings.Default;
+                    settings = Settings.Default;
+                }
+                else
+                {
+                    ValidateSettings(ref settings);
                 }
 
-                ValidateSettings(ref settings);
+                // always store the config to ensure the json has the new fields added through a new version
                 server.StoreModConfig(settings, SettingsFile);
                 return settings;
             }
             catch
             {
+                // in case of error, reset the current settings
                 server.StoreModConfig(Settings.Default, SettingsFile);
                 return Settings.Default;
             }
         });
     }
 
-    public Settings Settings => settings.Value;
-
+    /// <summary>
+    /// Validation of the fields of the settings
+    /// </summary>
+    /// <param name="settings"></param>
+    /// <returns></returns>
     private static bool ValidateSettings(ref Settings settings)
     {
         var hasErrors = false;
@@ -81,6 +92,7 @@ internal class SettingsService : ISettingsService
         }
         if (settings.InventoriesBlacklist?.Length is not > 0)
         {
+            // for now at least one inventory blacklist is required as the creative inventory should ALWAYS be blacklisted
             hasErrors = true;
             settings = settings with
             {

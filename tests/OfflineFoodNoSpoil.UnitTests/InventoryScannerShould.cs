@@ -7,7 +7,7 @@ namespace Wiltoga.OfflineFoodNoSpoil.UnitTests;
 
 public class InventoryScannerShould : ScopedTest
 {
-    private readonly InventoryScanner scanner;
+    private readonly InventorySnapper scanner;
     private readonly IItemPerishService itemPerishService;
     private readonly IModDataManager modDataManager;
 
@@ -19,7 +19,7 @@ public class InventoryScannerShould : ScopedTest
     }
 
     [Fact]
-    public void FreezePerishEntries()
+    public void SnapPerishEntries()
     {
         var inventory = SubstituteInventory.Create();
         ItemSlot slot = new(inventory)
@@ -52,14 +52,14 @@ public class InventoryScannerShould : ScopedTest
             },
         ]);
 
-        scanner.FreezeInventory(inventory);
+        scanner.SnapInventory(inventory);
 
-        itemPerishService.Received(1).FreezeItem(entries[0]);
-        itemPerishService.Received(1).FreezeItem(entries[1]);
+        itemPerishService.Received(1).SnapItem(entries[0]);
+        itemPerishService.Received(1).SnapItem(entries[1]);
     }
 
     [Fact]
-    public void UnfreezePerishEntries()
+    public void RestorePerishEntries()
     {
         var inventory = SubstituteInventory.Create();
         ItemSlot slot = new(inventory)
@@ -92,14 +92,14 @@ public class InventoryScannerShould : ScopedTest
             },
         ]);
 
-        scanner.UnfreezeInventory(inventory);
+        scanner.RestoreInventory(inventory);
 
-        itemPerishService.Received(1).UnfreezeItem(entries[0], null);
-        itemPerishService.Received(1).UnfreezeItem(entries[1], null);
+        itemPerishService.Received(1).RestoreItem(entries[0], null);
+        itemPerishService.Received(1).RestoreItem(entries[1], null);
     }
 
     [Fact]
-    public void SaveModDataDuringFreeze()
+    public void SaveModDataDuringSnapping()
     {
         var inventory = SubstituteInventory.Create();
         ItemSlot slot = new(inventory)
@@ -134,11 +134,11 @@ public class InventoryScannerShould : ScopedTest
         ]);
         ModData modData1;
         ModData modData2;
-        itemPerishService.FreezeItem(entry1).Returns(modData1 = new()
+        itemPerishService.SnapItem(entry1).Returns(modData1 = new()
         {
             DisconnectTotalHours = 10,
         });
-        itemPerishService.FreezeItem(entry2).Returns(modData2 = new()
+        itemPerishService.SnapItem(entry2).Returns(modData2 = new()
         {
             DisconnectTotalHours = 20,
         });
@@ -153,13 +153,13 @@ public class InventoryScannerShould : ScopedTest
                 .WhoseValue.Should().Be(modData2);
         });
 
-        scanner.FreezeInventory(inventory);
+        scanner.SnapInventory(inventory);
 
         modDataManager.Received(1).SaveModData(slot, Arg.Any<Dictionary<string, ModData>>());
     }
 
     [Fact]
-    public void FetchModDataDuringUnfreeze()
+    public void FetchModDataDuringRestore()
     {
         var inventory = SubstituteInventory.Create();
         ItemSlot slot = new(inventory)
@@ -205,15 +205,15 @@ public class InventoryScannerShould : ScopedTest
             ["entryKey2"] = modData2,
         });
 
-        scanner.UnfreezeInventory(inventory);
+        scanner.RestoreInventory(inventory);
 
         modDataManager.Received(1).TryGetModData(slot, entries);
-        itemPerishService.Received(1).UnfreezeItem(entries[0], modData1);
-        itemPerishService.Received(1).UnfreezeItem(entries[1], modData2);
+        itemPerishService.Received(1).RestoreItem(entries[0], modData1);
+        itemPerishService.Received(1).RestoreItem(entries[1], modData2);
     }
 
     [Fact]
-    public void NotFreezeSlotsWithNoStack()
+    public void NotSnapSlotsWithNoStack()
     {
         var inventory = SubstituteInventory.Create();
         ItemSlot slot = new(inventory)
@@ -226,13 +226,13 @@ public class InventoryScannerShould : ScopedTest
         }
         inventory.GetEnumerator().Returns(_ => items());
 
-        scanner.FreezeInventory(inventory);
+        scanner.SnapInventory(inventory);
 
         itemPerishService.DidNotReceive().GetItemPerishEntries(slot);
     }
 
     [Fact]
-    public void NotUnfreezeSlotsWithNoStack()
+    public void NotRestoreSlotsWithNoStack()
     {
         var inventory = SubstituteInventory.Create();
         ItemSlot slot = new(inventory)
@@ -245,7 +245,7 @@ public class InventoryScannerShould : ScopedTest
         }
         inventory.GetEnumerator().Returns(_ => items());
 
-        scanner.UnfreezeInventory(inventory);
+        scanner.RestoreInventory(inventory);
 
         itemPerishService.DidNotReceive().GetItemPerishEntries(slot);
     }

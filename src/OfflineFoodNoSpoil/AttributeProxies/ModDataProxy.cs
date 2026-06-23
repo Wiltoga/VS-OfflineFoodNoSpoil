@@ -19,8 +19,5 @@ public class ModDataProxy(ITreeAttribute? attributes) : AttributeProxy(attribute
         attributes?.RemoveAttribute(AttributeName);
     }
 
-    public virtual double? DisconnectTotalHours
-    {
-        get => Tree?.TryGetDouble("disconnectTotalHours");
-    }
+    public virtual double? DisconnectTotalHours => TryGetDouble("disconnectTotalHours");
 }
