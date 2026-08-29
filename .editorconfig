@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CA2241
+dotnet_diagnostic.CA2241.severity = warning
